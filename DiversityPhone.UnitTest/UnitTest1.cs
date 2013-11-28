@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
+using System.Threading.Tasks;
 
 namespace DiversityPhone.UnitTest
 {
@@ -6,9 +7,10 @@ namespace DiversityPhone.UnitTest
     public class UnitTest1
     {
         [TestMethod]
-        public void TestMethod1()
+        public async Task TestMethod1()
         {
-            Assert.IsTrue(true);
+            await Task.Delay(1000);
+            Assert.IsTrue(false);
         }
     }
 }

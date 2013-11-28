@@ -126,6 +126,28 @@
       <LastGenOutput>AppResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DiversityPhone.Interface\DiversityPhone.Interface.csproj">
+      <Project>{1BBCA3C5-90DC-4729-B5DF-1BBE95E8BD64}</Project>
+      <Name>DiversityPhone.Interface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone.Model\DiversityPhone.Model.csproj">
+      <Project>{F4FD53A5-06DF-4431-AA33-34AEB3CAC032}</Project>
+      <Name>DiversityPhone.Model</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone.Resources\DiversityPhone.Resource.csproj">
+      <Project>{13B955B8-3DC1-4219-9824-AEFBEA3D2844}</Project>
+      <Name>DiversityPhone.Resource</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone.ServiceReference\DiversityPhone.ServiceReference.csproj">
+      <Project>{5F67B82B-6BE3-4B02-9056-B56F84BDED51}</Project>
+      <Name>DiversityPhone.ServiceReference</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone\DiversityPhone.csproj">
+      <Project>{6F554274-E7F8-420A-A8F5-6956C18A97EB}</Project>
+      <Name>DiversityPhone</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).$(TargetFrameworkVersion).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\$(TargetFrameworkIdentifier)\$(TargetFrameworkVersion)\Microsoft.$(TargetFrameworkIdentifier).CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
