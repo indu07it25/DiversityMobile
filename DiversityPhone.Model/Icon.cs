@@ -1,4 +1,4 @@
-﻿namespace DiversityPhone.ViewModels
+﻿namespace DiversityPhone.Model
 {
     public enum Icon
     {

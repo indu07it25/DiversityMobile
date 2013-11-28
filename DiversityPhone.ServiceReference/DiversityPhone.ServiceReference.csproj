@@ -113,14 +113,10 @@
     <Compile Include="DiversityService\DiversityServiceClient.cs" />
     <Compile Include="DiversityService\DiversityServiceClient.Multimedia.cs" />
     <Compile Include="DiversityService\ServiceObservableExtensions.cs" />
-    <Compile Include="ICurrentCredentials.cs" />
-    <Compile Include="IKeyMappingService.cs" />
     <Compile Include="DiversityService\DiversityServiceClient.Vocabulary.cs" />
     <Compile Include="DiversityService\DiversityServiceClient.Upload.cs" />
     <Compile Include="DiversityService\ModelProjection.cs" />
-    <Compile Include="Maps\IMapStorageService.cs" />
     <Compile Include="Maps\IMapTransferService.cs" />
-    <Compile Include="Maps\Map.cs" />
     <Compile Include="Maps\MapTransferService.cs" />
     <Compile Include="Maps\TestMapTransferService.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

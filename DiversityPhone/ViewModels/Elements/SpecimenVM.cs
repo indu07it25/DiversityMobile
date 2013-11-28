@@ -18,13 +18,13 @@
         {
             get
             {
-                return (Model.IsObservation()) ? ViewModels.Icon.Observation : ViewModels.Icon.Specimen;
+                return (Model.IsObservation()) ? Icon.Observation : Icon.Specimen;
             }
         }
-        
+
 
         public SpecimenVM(Specimen model)
-            : base( model)
+            : base(model)
         {
             model.ObservableForProperty(x => x.AccessionNumber)
                 .Subscribe(_ => this.RaisePropertyChanged(x => x.Description));

@@ -177,7 +177,7 @@ namespace DiversityPhone.Services
             Progress.Report(Tuple.Create(BackupStage.ExternalData, 0));
 
             var snapshotMultimediaDir = Path.Combine(snapshotDir, MultimediaStorageService.MEDIA_FOLDER);
-            var snapshotDBPath = Path.Combine(snapshotDir, DiversityDataContext.DB_FILENAME);
+            var snapshotDBPath = Path.Combine(snapshotDir, DiversityConstants.DB_FILENAME);
 
             using (var db = new DiversityDataContext(snapshotDBPath))
             {
@@ -256,7 +256,7 @@ namespace DiversityPhone.Services
                 var settingsPath = Path.Combine(SnapshotDir, SettingsService.SETTINGS_FILE);
                 var settings = Settings.LoadSettingsFromFile(settingsPath);
 
-                var hasDB = Iso.FileExists(Path.Combine(SnapshotDir, DiversityDataContext.DB_FILENAME));
+                var hasDB = Iso.FileExists(Path.Combine(SnapshotDir, DiversityConstants.DB_FILENAME));
 
                 if (completionTimeStamp.HasValue && settings != null && hasDB)
                 {

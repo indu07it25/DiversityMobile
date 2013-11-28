@@ -13,7 +13,7 @@ namespace DiversityPhone.ViewModels
         {
             get
             {
-                return ViewModels.Icon.Event;
+                return Icon.Event;
             }
         }        
 

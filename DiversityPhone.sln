@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiversityPhone.Resource", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiversityPhone.UnitTest", "DiversityPhone.UnitTest\DiversityPhone.UnitTest.csproj", "{B1E0B52D-9735-4963-A8C9-64D82690829E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiversityPhone.Storage", "DiversityPhone.Storage\DiversityPhone.Storage.csproj", "{B778320D-871C-4308-B281-CAF01ABBB739}"
+EndProject
 Global
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = DiversityPhone.vsmdi
@@ -212,6 +214,18 @@ Global
 		{B1E0B52D-9735-4963-A8C9-64D82690829E}.Release|x86.ActiveCfg = Release|x86
 		{B1E0B52D-9735-4963-A8C9-64D82690829E}.Release|x86.Build.0 = Release|x86
 		{B1E0B52D-9735-4963-A8C9-64D82690829E}.Release|x86.Deploy.0 = Release|x86
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|ARM.ActiveCfg = Release|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{B778320D-871C-4308-B281-CAF01ABBB739}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,8 +1,6 @@
 ﻿using DiversityPhone.Interface;
 using DiversityPhone.Model;
-using DiversityPhone.Services;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Concurrency;
@@ -44,7 +42,7 @@ namespace DiversityPhone.ViewModels.Utility
                     var cancelSource = new CancellationTokenSource();
                     var cancel = cancelSource.Token;
                     Items.OnNext(
-                        collectModificationsImpl()
+                        Storage.CollectModifications()
                             .ToObservable(ThreadPool)
                             .TakeWhile(_ => !cancel.IsCancellationRequested)
                             .Finally(obs.OnCompleted)
@@ -137,54 +135,7 @@ namespace DiversityPhone.ViewModels.Utility
             return res;
         }
 
-        private IEnumerable<IElementVM> collectModificationsImpl()
-        {
-            using (var ctx = new DiversityDataContext())
-            {
-                // Finished Series
-                foreach (var i in (from es in ctx.EventSeries
-                                   where es.CollectionSeriesID == null && es.SeriesEnd != null
-                                   select new EventSeriesVM(es) as IElementVM))
-                    yield return i;
-                // Events in Uploaded Series
-                foreach (var i in (from es in ctx.EventSeries
-                                   where es.CollectionSeriesID != null
-                                   join ev in ctx.Events on es.SeriesID equals ev.SeriesID
-                                   where ev.CollectionEventID == null
-                                   select new EventVM(ev) as IElementVM))
-                    yield return i;
-                // Events in NoEventSeries
-                foreach (var i in (from ev in ctx.Events
-                                   where ev.SeriesID == null && ev.CollectionEventID == null
-                                   select new EventVM(ev) as IElementVM))
-                    yield return i;
-                // Specimen in Uploaded Series
-                foreach (var i in (from ev in ctx.Events
-                                   where ev.CollectionEventID != null
-                                   join s in ctx.Specimen on ev.EventID equals s.EventID
-                                   where s.CollectionSpecimenID == null
-                                   select new SpecimenVM(s) as IElementVM))
-                    yield return i;
 
-                foreach (var i in (from iu in
-                                       //New IU with parent Spec Uploaded
-                                       (from s in ctx.Specimen
-                                        where s.CollectionSpecimenID != null
-                                        join iu in ctx.IdentificationUnits on s.SpecimenID equals iu.SpecimenID
-                                        where iu.CollectionUnitID == null
-                                        && iu.RelatedUnitID == null
-                                        select iu)
-                                           //New IU with parent Unit uploaded
-                                   .Union(from u in ctx.IdentificationUnits
-                                          where u.CollectionUnitID != null
-                                          join sub in ctx.IdentificationUnits on u.UnitID equals sub.RelatedUnitID
-                                          where sub.CollectionUnitID == null
-                                          select sub)
-                                   select new IdentificationUnitVM(iu) as IElementVM))
-                    yield return i;
-            }
-
-        }
 
 
 

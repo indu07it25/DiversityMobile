@@ -1,11 +1,11 @@
-﻿using DiversityPhone.ViewModels;
+﻿using DiversityPhone.Model;
 using System;
 using System.Windows.Data;
 using System.Windows.Media;
 
 namespace DiversityPhone.View
 {
-    
+
     public class IconToImageConverter : IValueConverter
     {
         public virtual object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
@@ -14,10 +14,10 @@ namespace DiversityPhone.View
                 return null;
 
             if (!(value.GetType().ToString().Contains(typeof(Icon).ToString())))//Design Time Data
-                    throw new NotSupportedException(value.GetType().ToString());
+                throw new NotSupportedException(value.GetType().ToString());
 
             string imageURI = "/Images/appbar.add.rest.png";
-            switch ((Icon)Enum.Parse(typeof(Icon),value.ToString(), false))
+            switch ((Icon)Enum.Parse(typeof(Icon), value.ToString(), false))
             {
                 case Icon.EventSeries:
                     return "/Images/SNSBIcons/Series_80.png";
@@ -41,11 +41,11 @@ namespace DiversityPhone.View
                     return "/Images/appbar.feature.audio.rest.png";
                 case Icon.Video:
                     return "/Images/appbar.feature.video.rest.png";
-                case Icon.None: 
+                case Icon.None:
                     return null;
                 default:
                     break;
-                                  
+
             }
             if (targetType == typeof(ImageSource))
                 return new ImageSourceConverter().ConvertFromString(imageURI);

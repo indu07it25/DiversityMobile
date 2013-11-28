@@ -144,6 +144,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
+    <Compile Include="Icon.cs" />
     <Compile Include="IEntity.cs" />
     <Compile Include="ILocalizable.cs" />
     <Compile Include="IModifyable.cs" />
@@ -160,7 +161,9 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="LocalizableMixin.cs" />
+    <Compile Include="Map.cs" />
     <Compile Include="Messages.cs" />
+    <Compile Include="NoEventSeriesMixin.cs" />
     <Compile Include="Page.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="DataModel\Property.cs" />
@@ -215,6 +218,12 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DiversityPhone.Resources\DiversityPhone.Resource.csproj">
+      <Project>{13B955B8-3DC1-4219-9824-AEFBEA3D2844}</Project>
+      <Name>DiversityPhone.Resource</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.$(TargetFrameworkProfile).Overrides.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />

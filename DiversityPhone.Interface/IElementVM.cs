@@ -1,8 +1,9 @@
-﻿using ReactiveUI;
+﻿using DiversityPhone.Model;
+using ReactiveUI;
 using System;
 using System.Reactive.Linq;
 
-namespace DiversityPhone.ViewModels
+namespace DiversityPhone
 {
     public interface IElementVM
     {
@@ -21,6 +22,6 @@ namespace DiversityPhone.ViewModels
         public static IObservable<T> Model<T>(this IObservable<IElementVM<T>> This)
         {
             return This.Select(vm => vm.Model);
-        }        
+        }
     }
 }

@@ -35,7 +35,7 @@ namespace DiversityPhone.ViewModels
         public MapVM(Map model)
             : base(model)
         {
-            
+
         }
 
         public void SetModel(Map model)
@@ -61,7 +61,7 @@ namespace DiversityPhone.ViewModels
 
         public override Icon Icon
         {
-            get { return ViewModels.Icon.Map; }
+            get { return Icon.Map; }
         }
     }
 }

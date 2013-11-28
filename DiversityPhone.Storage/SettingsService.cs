@@ -1,6 +1,5 @@
 ﻿using DiversityPhone.Interface;
 using DiversityPhone.Model;
-using DiversityPhone.ViewModels;
 using System;
 using System.Diagnostics.Contracts;
 using System.IO;

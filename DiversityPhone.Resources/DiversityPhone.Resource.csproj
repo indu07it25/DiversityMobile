@@ -41,6 +41,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DiversityConstants.cs" />
     <Compile Include="Properties\DiversityResources.Designer.cs">
       <DependentUpon>DiversityResources.resx</DependentUpon>
       <AutoGen>True</AutoGen>

@@ -19,9 +19,9 @@ namespace DiversityPhone.Services
         {
             for (int i = 0; i < Int32.MaxValue; i++)
             {
-                yield return string.Format("{0}.{1}.bak", DiversityDataContext.DB_FILENAME, i);
+                yield return string.Format("{0}.{1}.bak", DiversityConstants.DB_FILENAME, i);
             }
-            
+
         }
 
         public void MoveAndRecreateDatabase()
@@ -29,9 +29,9 @@ namespace DiversityPhone.Services
             using (var store = IsolatedStorageFile.GetUserStoreForApplication())
             {
                 string bakFileName = BackupDBFiles().First(file => !store.FileExists(file));
-               
 
-                store.MoveFile(DiversityDataContext.DB_FILENAME, bakFileName);
+
+                store.MoveFile(DiversityConstants.DB_FILENAME, bakFileName);
                 CheckAndRepairDatabase();
             }
         }

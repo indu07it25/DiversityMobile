@@ -146,7 +146,6 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Lib\ICSharpCode.SharpZipLib.Silverlight\SharpZipLib.WindowsPhone7.dll</HintPath>
     </Reference>
-    <Reference Include="system.data.linq" />
     <Reference Include="System.Device" />
     <Reference Include="System.IO, Version=1.5.11.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -197,30 +196,17 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="Helper\SwitchableCommand.cs" />
-    <Compile Include="Helper\FileTimeStampMixin.cs" />
-    <Compile Include="Helper\IsolatedStorageExtensions.cs" />
     <Compile Include="Helper\ObservableMixin.cs" />
-    <Compile Include="Helper\PercentageReporter.cs" />
     <Compile Include="Helper\ReactiveCommandMixin.cs" />
     <Compile Include="LiveSDKTaskAsync\ApiMethod.cs" />
     <Compile Include="LiveSDKTaskAsync\LiveAuthClientTaskAsync.cs" />
     <Compile Include="LiveSDKTaskAsync\LiveConnectClientTaskAsync.cs" />
+    <Compile Include="Services\CleanupService.cs" />
     <Compile Include="Services\CloudStorageService.cs" />
-    <Compile Include="Services\ProfileService.cs" />
-    <Compile Include="Services\Storage\BackupService.cs" />
-    <Compile Include="Services\Storage\CleanupService.cs" />
-    <Compile Include="Services\Storage\DiversityDataContext.cs" />
-    <Compile Include="Services\Storage\OfflineStorage.CascadingDelete.cs" />
-    <Compile Include="Services\Storage\FieldDataService.cs" />
-    <Compile Include="Services\Storage\FieldDataService.Migration.cs" />
-    <Compile Include="Services\Storage\FieldDataService.Queries.cs" />
-    <Compile Include="Services\Storage\TaxonService.cs" />
-    <Compile Include="Services\Storage\VocabularyService.cs" />
     <Compile Include="Helper\EventHierarchyLoader.cs" />
     <Compile Include="Helper\Extensions.cs" />
     <Compile Include="Helper\ListSelectionHelper.cs" />
     <Compile Include="Helper\MultipleSelectionHelper.cs" />
-    <Compile Include="Helper\NoEventSeriesMixin.cs" />
     <Compile Include="Helper\ReactiveCollectionListener.cs" />
     <Compile Include="Helper\ReactiveCommand.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -229,18 +215,14 @@
     <Compile Include="Services\ConnectivityService.cs" />
     <Compile Include="Services\LocationService.cs" />
     <Compile Include="Services\MapProjection.cs" />
-    <Compile Include="Services\Maps\MapStorage.cs" />
     <Compile Include="Helper\MessengerMixin.cs" />
-    <Compile Include="Services\Storage\MultimediaStorageService.cs" />
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\NotificationService.cs" />
-    <Compile Include="Services\Storage\SettingsService.cs" />
     <Compile Include="Services\VideoService.cs" />
     <Compile Include="ViewModels\Base\GenericItemCommands.cs" />
     <Compile Include="ViewModels\Base\EditPageVMBase.cs" />
     <Compile Include="ViewModels\Base\ElementPageVMBase.cs" />
     <Compile Include="ViewModels\Base\ElementVMBase.cs" />
-    <Compile Include="ViewModels\Base\Icon.cs" />
     <Compile Include="ViewModels\Base\PageVMBase.cs" />
     <Compile Include="ViewModels\Base\ViewPageVMBase.cs" />
     <Compile Include="ViewModels\Edit\EditAnalysisVM.cs" />
@@ -259,7 +241,6 @@
     <Compile Include="ViewModels\Interface\IAudioVideoPageVM.cs" />
     <Compile Include="ViewModels\Interface\IDeletePageVM.cs" />
     <Compile Include="ViewModels\Interface\IEditPageVM.cs" />
-    <Compile Include="ViewModels\Interface\IElementVM.cs" />
     <Compile Include="ViewModels\Interface\ISavePageVM.cs" />
     <Compile Include="ViewModels\Maps\MapManagementVM.cs" />
     <Compile Include="ViewModels\Maps\MapVM.cs" />
@@ -790,6 +771,10 @@
     <ProjectReference Include="..\DiversityPhone.ServiceReference\DiversityPhone.ServiceReference.csproj">
       <Project>{5F67B82B-6BE3-4B02-9056-B56F84BDED51}</Project>
       <Name>DiversityPhone.ServiceReference</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone.Storage\DiversityPhone.Storage.csproj">
+      <Project>{B778320D-871C-4308-B281-CAF01ABBB739}</Project>
+      <Name>DiversityPhone.Storage</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup />

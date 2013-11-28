@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using DiversityPhone.Model;
+using ReactiveUI;
 
 namespace DiversityPhone.ViewModels
 {
@@ -7,7 +8,7 @@ namespace DiversityPhone.ViewModels
     /// </summary>
     /// <typeparam name="T">The Model class that this VM will encapsulate.</typeparam>
     public abstract class ElementVMBase<T> : ReactiveObject, IElementVM<T>
-    { 
+    {
         /// <summary>
         /// Encapsulated Model Instance
         /// </summary>
@@ -32,5 +33,5 @@ namespace DiversityPhone.ViewModels
         {
             get { return Model; }
         }
-    }   
+    }
 }

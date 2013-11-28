@@ -15,22 +15,22 @@
             {
                 return _esIcon;
             }
-            
+
         }
 
-        public EventSeriesVM( EventSeries model )
+        public EventSeriesVM(EventSeries model)
             : base(model)
-        {           
+        {
             if (Model.IsNoEventSeries()) //Überprüfen auf NoEventSeries
-                _esIcon = ViewModels.Icon.NoEventSeries;
+                _esIcon = Icon.NoEventSeries;
             else
             {
-                _esIcon = ViewModels.Icon.EventSeries;                
+                _esIcon = Icon.EventSeries;
             }
 
             Model.ObservableForProperty(x => x.Description)
                 .Subscribe(_ => this.RaisePropertyChanged(x => x.Description));
-        }        
+        }
     }
 }
 

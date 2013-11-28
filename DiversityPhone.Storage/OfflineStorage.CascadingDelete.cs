@@ -23,11 +23,11 @@ namespace DiversityPhone.Services
                 .FirstOrDefault();
         }
 
-        public IObservable<Unit> deleteCascadingAsync<T>(T detachedRow) where T : class
+        public IObservable<Unit> deleteCascadingAsync<T>(ICurrentProfile Profile, T detachedRow) where T : class
         {
             return Observable.Start(() =>
                 {
-                    using (var ctx = new DiversityDataContext())
+                    using (var ctx = new DiversityDataContext(Profile))
                     {
                         if (typeof(T) == typeof(EventSeries))
                         {
