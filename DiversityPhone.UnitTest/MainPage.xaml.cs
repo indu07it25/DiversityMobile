@@ -1,24 +1,31 @@
-﻿using Microsoft.Phone.Controls;
-using Microsoft.Phone.Shell;
-using Microsoft.Silverlight.Testing;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Navigation;
+using Microsoft.Phone.Controls;
+using Microsoft.Phone.Shell;
+using DiversityPhone.UnitTest.Resources;
+using System.Threading;
+using Microsoft.VisualStudio.TestPlatform.Core;
+using vstest_executionengine_platformbridge;
+using Microsoft.VisualStudio.TestPlatform.TestExecutor;
+using System.Reflection;
 
 namespace DiversityPhone.UnitTest
 {
-    public partial class MainPage
+    public partial class MainPage : PhoneApplicationPage
     {
+        // Constructor
         public MainPage()
         {
             InitializeComponent();
-        }
 
-        private void MainPage_OnLoaded(object sender, RoutedEventArgs e)
-        {
-            SystemTray.IsVisible = false;
+            var wrapper = new TestExecutorServiceWrapper();
+            new Thread(new ServiceMain((param0, param1) => wrapper.SendMessage((ContractName)param0, param1)).Run).Start();
 
-            var testPage = (IMobileTestPage)UnitTestSystem.CreateTestPage();
-            BackKeyPress += (x, xe) => xe.Cancel = testPage.NavigateBack();
-            ((PhoneApplicationFrame)Application.Current.RootVisual).Content = testPage;
         }
     }
 }
