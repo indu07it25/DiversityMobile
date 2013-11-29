@@ -96,6 +96,7 @@
     <Compile Include="FieldDataService.Migration.cs" />
     <Compile Include="FieldDataService.Queries.cs" />
     <Compile Include="FileTimeStampMixin.cs" />
+    <Compile Include="IRepository.cs" />
     <Compile Include="IsolatedStorageExtensions.cs" />
     <Compile Include="MapStorage.cs" />
     <Compile Include="MultimediaStorageService.cs" />

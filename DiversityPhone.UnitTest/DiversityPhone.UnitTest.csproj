@@ -74,7 +74,7 @@
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
     <Compile Include="LocalizedStrings.cs" />
-    <Compile Include="UnitTest1.cs" />
+    <Compile Include="RepositoryTest.cs" />
     <Compile Include="MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
@@ -142,6 +142,10 @@
     <ProjectReference Include="..\DiversityPhone.ServiceReference\DiversityPhone.ServiceReference.csproj">
       <Project>{5F67B82B-6BE3-4B02-9056-B56F84BDED51}</Project>
       <Name>DiversityPhone.ServiceReference</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DiversityPhone.Storage\DiversityPhone.Storage.csproj">
+      <Project>{B778320D-871C-4308-B281-CAF01ABBB739}</Project>
+      <Name>DiversityPhone.Storage</Name>
     </ProjectReference>
     <ProjectReference Include="..\DiversityPhone\DiversityPhone.csproj">
       <Project>{6F554274-E7F8-420A-A8F5-6956C18A97EB}</Project>
