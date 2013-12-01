@@ -12,6 +12,7 @@ using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
 using Microsoft.Phone.Data.Linq.Mapping;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
@@ -19,14 +20,14 @@ namespace DiversityPhone.Model
 #if !TEST
 	[Index(Columns="RelatedUnitID", IsUnique=false, Name="relunit_idx")] 
 #endif
-	public class IdentificationUnit : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner
+	public class IdentificationUnit : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner, IMappedEntity
 	{  
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
 		private Binary version;
 #pragma warning restore 0169
 
-<# Row("int", "UnitID", RowKind.Key); #>  
+<# Row("int?", "UnitID", RowKind.Key); #>  
 <# Row("int?", "CollectionUnitID", RowKind.Nullable); #>    
 <# Row("int", "SpecimenID"); #> 
 <# Row("int?", "RelatedUnitID", RowKind.Nullable); #> 
@@ -54,36 +55,21 @@ namespace DiversityPhone.Model
 			this.Qualification = string.Empty;
         }
 
-        public static IQueryOperations<IdentificationUnit> Operations
-        {
-            get;
-            private set;
-        }
-
-        static IdentificationUnit()
-        {
-            Operations = new QueryOperations<IdentificationUnit>(
-                //Smallerthan
-                          (q, iu) => q.Where(row => row.UnitID < iu.UnitID),
-                //Equals
-                          (q, iu) => q.Where(row => row.UnitID == iu.UnitID),
-                //Orderby
-                          (q) => q.OrderBy(iu => iu.UnitID),
-                //FreeKey
-                          (q, iu) =>
-                          {
-                              iu.UnitID = QueryOperations<IdentificationUnit>.FindFreeIntKey(q, row => row.UnitID);
-                          });
-        }
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.IdentificationUnit; }
         }
 
-        public int EntityID
+        public int? EntityID
         {
             get { return UnitID; }
+			set { UnitID = value; }
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionUnitID; }
+			set { CollectionUnitID = value; }
         }
     }	
 }

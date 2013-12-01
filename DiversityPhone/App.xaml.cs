@@ -16,15 +16,20 @@ using System.Threading.Tasks;
 using System.Windows;
 
 
-namespace DiversityPhone {
-    public partial class App : Application {
+namespace DiversityPhone
+{
+    public partial class App : Application
+    {
         public static IKernel Kernel { get; private set; }
 
 
         private static ICurrentProfile _Profile = null;
-        public static ICurrentProfile Profile {
-            get {
-                if (_Profile == null) {
+        public static ICurrentProfile Profile
+        {
+            get
+            {
+                if (_Profile == null)
+                {
                     _Profile = Kernel.Get<ICurrentProfile>();
                 }
                 return _Profile;
@@ -40,7 +45,8 @@ namespace DiversityPhone {
         /// <summary>
         /// Constructor for the Application object.
         /// </summary>
-        public App() {
+        public App()
+        {
             // Global handler for uncaught exceptions. 
             UnhandledException += Application_UnhandledException;
 
@@ -52,7 +58,8 @@ namespace DiversityPhone {
 
 
             // Show graphics profiling information while debugging.
-            if (System.Diagnostics.Debugger.IsAttached) {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
                 // Display the current frame rate counters.
                 //Application.Current.Host.Settings.EnableFrameRateCounter = true;
 
@@ -72,15 +79,16 @@ namespace DiversityPhone {
 
         }
 
-        class ViewModelModule : Ninject.Modules.NinjectModule {
-            private void BindAndActivateSingleton<T>() {
+        class ViewModelModule : Ninject.Modules.NinjectModule
+        {
+            private void BindAndActivateSingleton<T>()
+            {
                 var tmp = Kernel.Get<T>();
                 Bind<T>().ToConstant(tmp).InSingletonScope();
             }
 
-            public override void Load() {
-                PageVMBase.Initialize(Kernel.Get<IMessageBus>(), Kernel.Get<INotificationService>());
-
+            public override void Load()
+            {
                 BindAndActivateSingleton<HomeVM>();
                 BindAndActivateSingleton<ViewESVM>();
                 BindAndActivateSingleton<EditESVM>();
@@ -117,13 +125,16 @@ namespace DiversityPhone {
 
         }
 
-        class ServiceModule : Ninject.Modules.NinjectModule {
-            private void BindAndActivateSingleton<T>() {
+        class ServiceModule : Ninject.Modules.NinjectModule
+        {
+            private void BindAndActivateSingleton<T>()
+            {
                 Bind<T>().ToSelf().InSingletonScope();
                 Kernel.Get<T>();
             }
 
-            public override void Load() {
+            public override void Load()
+            {
                 Bind<IScheduler>().ToConstant(DispatcherScheduler.Current).WhenTargetHas<DispatcherAttribute>();
                 Bind<IScheduler>().ToConstant(ThreadPoolScheduler.Instance).WhenTargetHas<ThreadPoolAttribute>();
                 Bind<INotificationService>().To<NotificationService>().InSingletonScope();
@@ -170,18 +181,23 @@ namespace DiversityPhone {
                 Bind<ICleanupData>().To<CleanupService>();
 
                 Bind<IBackupService>().To<BackupService>();
+
+                Bind<IPageActivation>().To<PageActivator>();
             }
         }
 
 
-        class InitModule : Ninject.Modules.NinjectModule {
-            public override void Load() {
+        class InitModule : Ninject.Modules.NinjectModule
+        {
+            public override void Load()
+            {
                 Kernel.Get<FieldDataService>().CheckAndRepairDatabase();
                 Kernel.Get<IMessageBus>().SendMessage(EventMessage.Default, MessageContracts.INIT);
             }
         }
 
-        public static void StartInitialize() {
+        public static void StartInitialize()
+        {
             if (Kernel != null) // Already Initialized
                 return;
 
@@ -196,7 +212,8 @@ namespace DiversityPhone {
             InitializeAsync();
         }
 
-        private static async Task InitializeAsync() {
+        private static async Task InitializeAsync()
+        {
             Kernel = new StandardKernel();
             Kernel.Bind<PhoneApplicationFrame>().ToConstant(RootFrame);
             Kernel.Load<FuncModule>();
@@ -206,7 +223,8 @@ namespace DiversityPhone {
             Kernel.Load<InitModule>();
 
             var listeners = KernelInitialized;
-            if (listeners != null) {
+            if (listeners != null)
+            {
                 listeners();
             }
         }
@@ -216,33 +234,39 @@ namespace DiversityPhone {
 
         // Code to execute when the application is launching (eg, from Start)
         // This code will not execute when the application is reactivated
-        private void Application_Launching(object sender, LaunchingEventArgs e) {
+        private void Application_Launching(object sender, LaunchingEventArgs e)
+        {
 
         }
 
         // Code to execute when the application is activated (brought to foreground)
         // This code will not execute when the application is first launched
-        private void Application_Activated(object sender, ActivatedEventArgs e) {
+        private void Application_Activated(object sender, ActivatedEventArgs e)
+        {
             // Ensure that application state is restored appropriately
 
         }
 
         // Code to execute when the application is deactivated (sent to background)
         // This code will not execute when the application is closing
-        private void Application_Deactivated(object sender, DeactivatedEventArgs e) {
+        private void Application_Deactivated(object sender, DeactivatedEventArgs e)
+        {
             // Ensure that required application state is persisted here./          
 
         }
 
         // Code to execute when the application is closing (eg, user hit Back)
         // This code will not execute when the application is deactivated
-        private void Application_Closing(object sender, ClosingEventArgs e) {
+        private void Application_Closing(object sender, ClosingEventArgs e)
+        {
 
         }
 
         // Code to execute if a navigation fails
-        private void RootFrame_NavigationFailed(object sender, System.Windows.Navigation.NavigationFailedEventArgs e) {
-            if (System.Diagnostics.Debugger.IsAttached) {
+        private void RootFrame_NavigationFailed(object sender, System.Windows.Navigation.NavigationFailedEventArgs e)
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
                 // A navigation has failed; break into the debugger
                 System.Diagnostics.Debugger.Break();
             }
@@ -250,8 +274,10 @@ namespace DiversityPhone {
         }
 
         // Code to execute on Unhandled Exceptions
-        private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e) {
-            if (System.Diagnostics.Debugger.IsAttached) {
+        private void Application_UnhandledException(object sender, ApplicationUnhandledExceptionEventArgs e)
+        {
+            if (System.Diagnostics.Debugger.IsAttached)
+            {
                 // An unhandled exception has occurred; break into the debugger
                 System.Diagnostics.Debugger.Break();
             }
@@ -261,7 +287,8 @@ namespace DiversityPhone {
             //Filter unhelpful Errors 
             // This might be because the user tapped a link twice too fast, before the browser could be launched (Info Page for example)
             // TODO Log
-            if (e.ExceptionObject.Message != "Unspecified error ") {
+            if (e.ExceptionObject.Message != "Unspecified error ")
+            {
 
                 var notify = Kernel.Get<INotificationService>();
                 if (notify != null)
@@ -276,7 +303,8 @@ namespace DiversityPhone {
         private bool phoneApplicationInitialized = false;
 
         // Do not add any additional code to this method
-        private void InitializePhoneApplication() {
+        private void InitializePhoneApplication()
+        {
             if (phoneApplicationInitialized)
                 return;
 
@@ -294,7 +322,8 @@ namespace DiversityPhone {
         }
 
         // Do not add any additional code to this method
-        private void CompleteInitializePhoneApplication(object sender, System.Windows.Navigation.NavigationEventArgs e) {
+        private void CompleteInitializePhoneApplication(object sender, System.Windows.Navigation.NavigationEventArgs e)
+        {
             // Set the root visual to allow the application to render
             if (RootVisual != RootFrame)
                 RootVisual = RootFrame;

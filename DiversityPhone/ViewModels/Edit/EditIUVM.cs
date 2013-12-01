@@ -5,18 +5,14 @@ using ReactiveUI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace DiversityPhone.ViewModels {
-    public class EditIUVM : EditPageVMBase<IdentificationUnit> {
-        readonly ITaxonService Taxa;
-        readonly IVocabularyService Vocabulary;
-        readonly ILocationService Geolocation;
-        readonly IFieldDataService Storage;
-
+namespace DiversityPhone.ViewModels
+{
+    public class EditIUVM : EditPageVMBase<IdentificationUnit>
+    {
         private ReactiveAsyncCommand UpdateIdentifications = new ReactiveAsyncCommand();
 
         BehaviorSubject<Coordinate> _latest_location = new BehaviorSubject<Coordinate>(Coordinate.Unknown);
@@ -24,26 +20,33 @@ namespace DiversityPhone.ViewModels {
 
         #region Properties
         private ObservableAsPropertyHelper<bool> _IsNew;
-        public bool IsNew {
-            get {
+        public bool IsNew
+        {
+            get
+            {
                 return _IsNew.Value;
             }
         }
 
         private ObservableAsPropertyHelper<bool> _IsObservation;
-        public bool IsObservation {
-            get {
+        public bool IsObservation
+        {
+            get
+            {
                 return _IsObservation.Value;
             }
         }
 
 
         private bool _OnlyObserved;
-        public bool OnlyObserved {
-            get {
+        public bool OnlyObserved
+        {
+            get
+            {
                 return _OnlyObserved;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.OnlyObserved, ref _OnlyObserved, value);
             }
         }
@@ -53,21 +56,27 @@ namespace DiversityPhone.ViewModels {
         public ListSelectionHelper<Term> RelationshipType { get; private set; }
 
         private string _Description;
-        public string Description {
-            get {
+        public string Description
+        {
+            get
+            {
                 return _Description;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.Description, ref _Description, value);
             }
         }
 
         private string _QueryString;
-        public string QueryString {
-            get {
+        public string QueryString
+        {
+            get
+            {
                 return _QueryString;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.QueryString, ref _QueryString, value);
             }
         }
@@ -81,7 +90,8 @@ namespace DiversityPhone.ViewModels {
 
         private DateTime _AnalysisDate;
 
-        public DateTime AnalysisDate {
+        public DateTime AnalysisDate
+        {
             get { return _AnalysisDate; }
             set { this.RaiseAndSetIfChanged(x => x.AnalysisDate, ref _AnalysisDate, value); }
         }
@@ -92,34 +102,29 @@ namespace DiversityPhone.ViewModels {
 
 
         public EditIUVM(
-            ITaxonService Taxa,
-            IVocabularyService Vocabulary,
-            ILocationService Geolocation,
-            IFieldDataService Storage,
-            [Dispatcher] IScheduler Dispatcher,
-            [ThreadPool] IScheduler ThreadPool
-            ) {
-            this.Storage = Storage;
-            this.Taxa = Taxa;
-            this.Vocabulary = Vocabulary;
-            this.Geolocation = Geolocation;
-
-            TaxonomicGroup = new ListSelectionHelper<Term>(Dispatcher);
-            RelationshipType = new ListSelectionHelper<Term>(Dispatcher);
-            Identification = new ListSelectionHelper<TaxonName>(Dispatcher);
-            Qualifications = new ListSelectionHelper<Model.Qualification>(Dispatcher);
+            MapVMServices Services
+            )
+            : base(Services)
+        {
+            TaxonomicGroup = new ListSelectionHelper<Term>(Services.Dispatcher);
+            RelationshipType = new ListSelectionHelper<Term>(Services.Dispatcher);
+            Identification = new ListSelectionHelper<TaxonName>(Services.Dispatcher);
+            Qualifications = new ListSelectionHelper<Model.Qualification>(Services.Dispatcher);
 
             Observable.CombineLatest(
                 CurrentModelObservable.Where(m => m.IsNew()),
-                ActivationObservable,
+                Services.Activation.ActivationObservable,
                 (_, act) => act
             )
-                .Subscribe(active => {
-                    if (active) {
+                .Subscribe(active =>
+                {
+                    if (active)
+                    {
                         _latest_location.OnNext(Coordinate.Unknown);
-                        _location_subscription = Geolocation.Location().Where(l => !l.IsUnknown()).Subscribe(_latest_location);
+                        _location_subscription = Services.Location.Location().Where(l => !l.IsUnknown()).Subscribe(_latest_location);
                     }
-                    else {
+                    else
+                    {
                         _location_subscription.Dispose();
                     }
                 });
@@ -136,7 +141,7 @@ namespace DiversityPhone.ViewModels {
 
             var isObservation =
                 CurrentModelObservable
-                .Select(m => Storage.getSpecimenByID(m.SpecimenID))
+                .Select(m => Services.Storage.Single<Specimen>(x => x.SpecimenID == m.SpecimenID))
                 .Where(spec => spec != null)
                 .Select(spec => spec.IsObservation());
 
@@ -168,7 +173,7 @@ namespace DiversityPhone.ViewModels {
                     .Publish();
 
             identificationQuery
-                .Throttle(TimeSpan.FromMilliseconds(500), Dispatcher)
+                .Throttle(TimeSpan.FromMilliseconds(500), Services.Dispatcher)
                 .Subscribe(UpdateIdentifications.Execute);
 
             identificationQuery.Connect();
@@ -177,7 +182,7 @@ namespace DiversityPhone.ViewModels {
             var noUpdatesInFlight = UpdateIdentifications.ItemsInflight
                 .Select(count => count == 0)
                 .StartWith(true)
-                .Replay(1, Dispatcher);
+                .Replay(1, Services.Dispatcher);
 
             noUpdatesInFlight.Connect();
 
@@ -195,10 +200,11 @@ namespace DiversityPhone.ViewModels {
 
             canSave
                 .DistinctUntilChanged()
-                .Select(can_save => {
+                .Select(can_save =>
+                {
                     //immediately disable saving, delay reenabling it
                     if (can_save)
-                        return Observable.Return(true).Delay(TimeSpan.FromMilliseconds(500), Dispatcher);
+                        return Observable.Return(true).Delay(TimeSpan.FromMilliseconds(500), Services.Dispatcher);
                     else
                         return Observable.Return(false);
                 })
@@ -207,11 +213,14 @@ namespace DiversityPhone.ViewModels {
                 .Subscribe(CanSaveSubject.OnNext);
 
             UpdateIdentifications
-                .RegisterAsyncFunction(t_obj => {
+                .RegisterAsyncFunction(t_obj =>
+                {
                     var t = (System.Tuple<string, Term>)t_obj;
-                    var candidates = Taxa.getTaxonNames(t.Item2, t.Item1).Take(10)
-                    .SelectMany(tn => {
-                        if (!string.IsNullOrWhiteSpace(tn.AcceptedNameURI)) {
+                    var candidates = Services.Taxa.getTaxonNames(t.Item2, t.Item1).Take(10)
+                    .SelectMany(tn =>
+                    {
+                        if (!string.IsNullOrWhiteSpace(tn.AcceptedNameURI))
+                        {
                             return new TaxonName[]
                                     {
                                         tn,
@@ -228,7 +237,8 @@ namespace DiversityPhone.ViewModels {
                     })
                     .ToList();
 
-                    if (!string.IsNullOrWhiteSpace(t.Item1)) {
+                    if (!string.IsNullOrWhiteSpace(t.Item1))
+                    {
                         //Prepend WorkingName as Identification
                         candidates.Insert(0,
                             new TaxonName()
@@ -243,22 +253,22 @@ namespace DiversityPhone.ViewModels {
                             });
                     }
                     return candidates as IList<TaxonName>;
-                }, ThreadPool)
-            .ObserveOn(Dispatcher)
+                }, Services.ThreadPool)
+            .ObserveOn(Services.Dispatcher)
             .Subscribe(Identification.ItemsObserver);
 
-            ActivationObservable
+            Services.Activation.ActivationObservable
                 .Take(1)
-                .Select(_ => Vocabulary.getTerms(TermList.TaxonomicGroups).ToList() as IList<Term>)
+                .Select(_ => Services.Vocabulary.getTerms(TermList.TaxonomicGroups).ToList() as IList<Term>)
                 .Subscribe(TaxonomicGroup.ItemsObserver);
 
-            this.FirstActivation()
-                .Select(_ => Vocabulary.getQualifications().ToList() as IList<Qualification>)
+            Services.Activation.FirstActivation()
+                .Select(_ => Services.Vocabulary.getQualifications().ToList() as IList<Qualification>)
                 .Subscribe(Qualifications.ItemsObserver);
 
             _IsToplevel
                 .Where(isToplevel => !isToplevel)
-                .Select(isToplevel => Vocabulary.getTerms(TermList.RelationshipTypes).ToList() as IList<Term>)
+                .Select(isToplevel => Services.Vocabulary.getTerms(TermList.RelationshipTypes).ToList() as IList<Term>)
                 .Subscribe(RelationshipType.ItemsObserver);
             #endregion
 
@@ -295,7 +305,7 @@ namespace DiversityPhone.ViewModels {
 
             var saveTaxonGroupSelection = Save
                 .Select(_ => TaxonomicGroup.SelectedItem);
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 saveTaxonGroupSelection,
                 MessageContracts.USE);
 
@@ -303,16 +313,18 @@ namespace DiversityPhone.ViewModels {
                 .Select(g => bringItemToTop(TaxonomicGroup.Items, g))
                 .Subscribe(TaxonomicGroup.ItemsObserver);
 
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 Save
                 .Select(_ => RelationshipType.SelectedItem),
                 MessageContracts.USE);
         }
 
-        private IList<T> bringItemToTop<T>(IEnumerable<T> oldlist, T item) where T : class {
+        private IList<T> bringItemToTop<T>(IEnumerable<T> oldlist, T item) where T : class
+        {
             IList<T> res = new List<T>();
             res.Add(item);
-            foreach (var other in oldlist.Where(x => x != item)) {
+            foreach (var other in oldlist.Where(x => x != item))
+            {
                 res.Add(other);
             }
             return res;
@@ -320,7 +332,8 @@ namespace DiversityPhone.ViewModels {
 
 
 
-        protected override void UpdateModel() {
+        protected override void UpdateModel()
+        {
             if (!Current.Model.IsLocalized())
                 Current.Model.SetCoordinates(_latest_location.FirstOrDefaultAsync().Wait() ?? Coordinate.Unknown);
             Current.Model.TaxonomicGroup = TaxonomicGroup.SelectedItem.Code;

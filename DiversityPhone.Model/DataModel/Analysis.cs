@@ -1,17 +1,15 @@
-﻿using Microsoft.Phone.Data.Linq.Mapping;
+﻿using DiversityPhone.Interface;
+using Microsoft.Phone.Data.Linq.Mapping;
 using System;
 using System.Data.Linq.Mapping;
-using System.Linq;
 using System.Text;
 
 
 namespace DiversityPhone.Model
 {
     [Table]
-#if !TEST
     [Index(Columns = "LastUsed", IsUnique = false, Name = "term_lastusage")]
-#endif
-    public class Analysis
+    public class Analysis : IReadOnlyEntity
     {
         //Read-Only
 
@@ -49,29 +47,6 @@ namespace DiversityPhone.Model
                 }
                 return sb.ToString();
             }
-        }
-
-
-        public static IQueryOperations<Analysis> Operations
-        {
-            get;
-            private set;
-        }
-
-        static Analysis()
-        {
-            Operations = new QueryOperations<Analysis>(
-                //Smallerthan
-                          (q, an) => q.Where(row => row.AnalysisID < an.AnalysisID),
-                //Equals
-                          (q, an) => q.Where(row => row.AnalysisID == an.AnalysisID),
-                //Orderby
-                          (q) => q.OrderBy(an => an.AnalysisID),
-                //FreeKey
-                          (q, an) =>
-                          {
-                              an.AnalysisID = QueryOperations<Analysis>.FindFreeIntKey(q, row => row.AnalysisID);
-                          });
         }
     }
 }

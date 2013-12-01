@@ -1,4 +1,5 @@
-﻿namespace DiversityPhone.ViewModels {
+﻿namespace DiversityPhone.ViewModels
+{
     using DiversityPhone.Interface;
     using DiversityPhone.Model;
     using ReactiveUI;
@@ -8,10 +9,10 @@
     using System.Linq;
     using System.Reactive.Linq;
 
-    public class ViewEVVM : ViewPageVMBase<Event> {
-        private readonly IFieldDataService Storage;
-
-        public enum Pivots {
+    public class ViewEVVM : ViewPageVMBase<Event>
+    {
+        public enum Pivots
+        {
             Specimen,
             Descriptions,
             Multimedia
@@ -28,11 +29,14 @@
 
         #region Properties
         private Pivots _SelectedPivot = Pivots.Specimen;
-        public Pivots SelectedPivot {
-            get {
+        public Pivots SelectedPivot
+        {
+            get
+            {
                 return _SelectedPivot;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(vm => vm.SelectedPivot, ref _SelectedPivot, value);
             }
         }
@@ -49,18 +53,19 @@
         private ReactiveAsyncCommand getProperties = new ReactiveAsyncCommand();
 
         public ViewEVVM(
-            IFieldDataService Storage,
+            DataVMServices Services,
             ElementMultimediaVM MultimediaList
-            ) {
-            this.Storage = Storage;
+            )
+            : base(Services)
+        {
 
             //Current
             EditEvent = new ReactiveCommand<IElementVM<Event>>();
             EditEvent
-                .ToMessage(Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.EDIT);
 
             //Specimen
-            SpecList = getSpecimen.RegisterAsyncFunction(ev => Storage.getSpecimenForEvent(ev as Event).Select(spec => new SpecimenVM(spec)))
+            SpecList = getSpecimen.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Specimen()).Select(spec => new SpecimenVM(spec)))
                 .SelectMany(specs => specs)
                 .CreateCollection();
             SpecList.ListenToChanges<Specimen, SpecimenVM>(spec => spec.EventID == Current.Model.EventID);
@@ -71,10 +76,10 @@
 
             SelectSpecimen = new ReactiveCommand<IElementVM<Specimen>>();
             SelectSpecimen
-                .ToMessage(Messenger, MessageContracts.VIEW);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW);
 
             //Properties
-            PropertyList = getProperties.RegisterAsyncFunction(ev => Storage.getPropertiesForEvent((ev as Event).EventID).Select(prop => new PropertyVM(prop)))
+            PropertyList = getProperties.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Properties()).Select(prop => new PropertyVM(prop)))
                 .SelectMany(props => props)
                 .CreateCollection();
             PropertyList.ListenToChanges<EventProperty, PropertyVM>(p => p.EventID == Current.Model.EventID);
@@ -85,7 +90,7 @@
 
             SelectProperty = new ReactiveCommand<IElementVM<EventProperty>>();
             SelectProperty
-                .ToMessage(Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.EDIT);
 
             //Multimedia
             this.MultimediaList = MultimediaList;
@@ -95,7 +100,7 @@
                 .Subscribe(MultimediaList);
 
             // Receive Latest Property List broadcast by EditPropertyVM
-            var properties = Messenger.Listen<IList<Property>>();
+            var properties = Services.Messenger.Listen<IList<Property>>();
             var allPropertiesSet = properties.Select(list => list.Count)
                 .CombineLatest(PropertyList.CollectionCountChanged, (available, set) => available <= set);
 
@@ -106,11 +111,11 @@
             //Add New
             Add = new ReactiveCommand(canAdd);
             Add.Where(_ => SelectedPivot == Pivots.Specimen)
-                .Select(_ => new SpecimenVM(new Specimen() { EventID = Current.Model.EventID }) as IElementVM<Specimen>)
-                .ToMessage(Messenger, MessageContracts.EDIT);
+                .Select(_ => new SpecimenVM(new Specimen() { EventID = Current.Model.EventID.Value }) as IElementVM<Specimen>)
+                .ToMessage(Services.Messenger, MessageContracts.EDIT);
             Add.Where(_ => SelectedPivot == Pivots.Descriptions)
                 .Select(_ => new PropertyVM(new EventProperty() { EventID = Current.Model.EventID }) as IElementVM<EventProperty>)
-                .ToMessage(Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.EDIT);
             Add.Where(_ => SelectedPivot == Pivots.Multimedia)
                 .Subscribe(MultimediaList.AddMultimedia.Execute);
 
@@ -118,7 +123,7 @@
             Maps = new ReactiveCommand();
             Maps
                 .Select(_ => Current.Model as ILocalizable)
-                .ToMessage(Messenger, MessageContracts.VIEW);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW);
         }
     }
 }

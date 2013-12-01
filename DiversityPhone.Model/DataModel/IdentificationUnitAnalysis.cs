@@ -1,15 +1,16 @@
 ﻿
 
-using ReactiveUI;
 using System;
+using System.Linq;
+using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using System.Linq;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class IdentificationUnitAnalysis : ReactiveObject, IModifyable
+	public class IdentificationUnitAnalysis : ReactiveObject, IModifyable, IWriteableEntity
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -17,10 +18,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _IdentificationUnitAnalysisID;
+		private int? _IdentificationUnitAnalysisID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int IdentificationUnitAnalysisID
+		public int? IdentificationUnitAnalysisID
 		{
 			get { return _IdentificationUnitAnalysisID; }
 			set 
@@ -40,7 +40,6 @@ namespace DiversityPhone.Model
 		
 		private int _UnitID;
 		[Column]
-		
 		public int UnitID
 		{
 			get { return _UnitID; }
@@ -60,7 +59,6 @@ namespace DiversityPhone.Model
 		
 		private int _AnalysisID;
 		[Column]
-		
 		public int AnalysisID
 		{
 			get { return _AnalysisID; }
@@ -81,7 +79,6 @@ namespace DiversityPhone.Model
 		
 		private string _AnalysisResult;
 		[Column]
-		
 		public string AnalysisResult
 		{
 			get { return _AnalysisResult; }
@@ -101,7 +98,6 @@ namespace DiversityPhone.Model
 		
 		private DateTime _AnalysisDate;
 		[Column]
-		
 		public DateTime AnalysisDate
 		{
 			get { return _AnalysisDate; }
@@ -128,7 +124,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -151,27 +146,11 @@ namespace DiversityPhone.Model
             this.AnalysisDate = DateTime.Now;                      
         }
 
-        public static IQueryOperations<IdentificationUnitAnalysis> Operations
-        {
-            get;
-            private set;
-        }
-
-        static IdentificationUnitAnalysis()
-        {
-            Operations = new QueryOperations<IdentificationUnitAnalysis>(
-                //Smallerthan
-                          (q, iuan) => q.Where(row => row.IdentificationUnitAnalysisID < iuan.IdentificationUnitAnalysisID),
-                //Equals
-                          (q, iuan) => q.Where(row => row.IdentificationUnitAnalysisID == iuan.IdentificationUnitAnalysisID),
-                //Orderby
-                          (q) => q.OrderBy(iuan => iuan.IdentificationUnitAnalysisID),
-                //FreeKey
-                          (q, iuan) =>
-                          {
-                              iuan.IdentificationUnitAnalysisID = QueryOperations<IdentificationUnitAnalysis>.FindFreeIntKey(q, row => row.IdentificationUnitAnalysisID);
-                          });
-        }
+		public int? EntityID
+		{
+			get { return IdentificationUnitAnalysisID; }
+			set { IdentificationUnitAnalysisID = value; }
+		}
     }
 }
  

@@ -1,11 +1,12 @@
 ﻿
 
-using Microsoft.Phone.Data.Linq.Mapping;
-using ReactiveUI;
 using System;
+using System.Linq;
+using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using System.Linq;
+using Microsoft.Phone.Data.Linq.Mapping;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
@@ -13,7 +14,7 @@ namespace DiversityPhone.Model
 #if !TEST
 	[Index(Columns="RelatedUnitID", IsUnique=false, Name="relunit_idx")] 
 #endif
-	public class IdentificationUnit : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner
+	public class IdentificationUnit : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner, IMappedEntity
 	{  
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -21,10 +22,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _UnitID;
+		private int? _UnitID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int UnitID
+		public int? UnitID
 		{
 			get { return _UnitID; }
 			set 
@@ -43,7 +43,6 @@ namespace DiversityPhone.Model
 		
 		private int? _CollectionUnitID;
 		[Column(CanBeNull=true)]
-		
 		public int? CollectionUnitID
 		{
 			get { return _CollectionUnitID; }
@@ -63,7 +62,6 @@ namespace DiversityPhone.Model
 		
 		private int _SpecimenID;
 		[Column]
-		
 		public int SpecimenID
 		{
 			get { return _SpecimenID; }
@@ -83,7 +81,6 @@ namespace DiversityPhone.Model
 		
 		private int? _RelatedUnitID;
 		[Column(CanBeNull=true)]
-		
 		public int? RelatedUnitID
 		{
 			get { return _RelatedUnitID; }
@@ -103,7 +100,6 @@ namespace DiversityPhone.Model
 		
 		private bool _OnlyObserved;
 		[Column]
-		
 		public bool OnlyObserved
 		{
 			get { return _OnlyObserved; }
@@ -123,7 +119,6 @@ namespace DiversityPhone.Model
 		
 		private string _TaxonomicGroup;
 		[Column]
-		
 		public string TaxonomicGroup
 		{
 			get { return _TaxonomicGroup; }
@@ -142,7 +137,6 @@ namespace DiversityPhone.Model
 				
 		private string _RelationType;
 		[Column]
-		
 		public string RelationType
 		{
 			get { return _RelationType; }
@@ -161,7 +155,6 @@ namespace DiversityPhone.Model
 				
 		private string _Qualification;
 		[Column]
-		
 		public string Qualification
 		{
 			get { return _Qualification; }
@@ -180,7 +173,6 @@ namespace DiversityPhone.Model
 				
 		private string _WorkingName;
 		[Column]
-		
 		public string WorkingName
 		{
 			get { return _WorkingName; }
@@ -199,7 +191,6 @@ namespace DiversityPhone.Model
 				
 		private string _IdentificationUri;
 		[Column]
-		
 		public string IdentificationUri
 		{
 			get { return _IdentificationUri; }
@@ -218,7 +209,6 @@ namespace DiversityPhone.Model
 				
 		private DateTime _AnalysisDate;
 		[Column]
-		
 		public DateTime AnalysisDate
 		{
 			get { return _AnalysisDate; }
@@ -245,7 +235,6 @@ namespace DiversityPhone.Model
 		
 		private double? _Altitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Altitude
 		{
 			get { return _Altitude; }
@@ -265,7 +254,6 @@ namespace DiversityPhone.Model
 		
 		private double? _Latitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Latitude
 		{
 			get { return _Latitude; }
@@ -285,7 +273,6 @@ namespace DiversityPhone.Model
 		
 		private double? _Longitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Longitude
 		{
 			get { return _Longitude; }
@@ -306,7 +293,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -333,36 +319,21 @@ namespace DiversityPhone.Model
 			this.Qualification = string.Empty;
         }
 
-        public static IQueryOperations<IdentificationUnit> Operations
-        {
-            get;
-            private set;
-        }
-
-        static IdentificationUnit()
-        {
-            Operations = new QueryOperations<IdentificationUnit>(
-                //Smallerthan
-                          (q, iu) => q.Where(row => row.UnitID < iu.UnitID),
-                //Equals
-                          (q, iu) => q.Where(row => row.UnitID == iu.UnitID),
-                //Orderby
-                          (q) => q.OrderBy(iu => iu.UnitID),
-                //FreeKey
-                          (q, iu) =>
-                          {
-                              iu.UnitID = QueryOperations<IdentificationUnit>.FindFreeIntKey(q, row => row.UnitID);
-                          });
-        }
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.IdentificationUnit; }
         }
 
-        public int EntityID
+        public int? EntityID
         {
             get { return UnitID; }
+			set { UnitID = value; }
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionUnitID; }
+			set { CollectionUnitID = value; }
         }
     }	
 }

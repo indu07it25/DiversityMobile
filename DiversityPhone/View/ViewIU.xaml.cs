@@ -20,9 +20,9 @@ namespace DiversityPhone.View
 
             _add = new CommandButtonAdapter(ApplicationBar.Buttons[0] as ApplicationBarIconButton, VM.Add);
             _maps = new CommandButtonAdapter(ApplicationBar.Buttons[1] as ApplicationBarIconButton, VM.Maps);
-            _mmo = new NewMultimediaAppBarUpdater(VM.Messenger, this, VM.MultimediaList);
+            _mmo = new NewMultimediaAppBarUpdater(VM.Services.Messenger, this, VM.MultimediaList);
         }
-       
+
         private void PhoneApplicationPage_BackKeyPress(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (VM != null)

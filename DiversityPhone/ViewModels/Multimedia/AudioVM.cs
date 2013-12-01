@@ -17,9 +17,7 @@ namespace DiversityPhone.ViewModels
 {
     public class AudioVM : EditPageVMBase<MultimediaObject>, IAudioVideoPageVM
     {
-
         private readonly IStoreMultimedia MultimediaStore;
-
 
         //Audio Components
         private Microphone microphone = Microphone.Default;
@@ -112,8 +110,11 @@ namespace DiversityPhone.ViewModels
 
         #region Constructor
 
-        public AudioVM(IStoreMultimedia MultimediaStore)
-            : base(mmo => mmo.MediaType == MediaType.Audio)
+        public AudioVM(
+            IStoreMultimedia MultimediaStore,
+            DataVMServices Services
+            )
+            : base(Services, mmo => mmo.MediaType == MediaType.Audio)
         {
             this.MultimediaStore = MultimediaStore;
             // Timer to simulate the XNA Framework game loop (Microphone is 
@@ -135,7 +136,7 @@ namespace DiversityPhone.ViewModels
 
             CanSave().Subscribe(CanSaveSubject);
 
-            this.OnActivation()
+            Services.Activation.OnActivation()
                 .Subscribe(_ =>
                     {
                         timer.Start();
@@ -151,7 +152,7 @@ namespace DiversityPhone.ViewModels
                         }
                     });
 
-            this.OnDeactivation()
+            Services.Activation.OnDeactivation()
                 .Subscribe(_ =>
                     {
                         timer.Stop();

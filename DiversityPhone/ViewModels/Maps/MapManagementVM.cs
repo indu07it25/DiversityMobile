@@ -9,19 +9,22 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Net;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
-namespace DiversityPhone.ViewModels {
-    public class MapManagementVM : PageVMBase {
-        public enum Pivot {
+namespace DiversityPhone.ViewModels
+{
+    public class MapManagementVM : ReactiveObject, IPageServices<MapVMServices>
+    {
+        public enum Pivot
+        {
             Local,
             Online
         }
 
         readonly IConnectivityService Network;
         readonly IMapTransferService MapService;
-        readonly IMapStorageService MapStorage;
+
+        public MapVMServices Services { get; private set; }
 
         public ReactiveAsyncCommand SearchMaps { get; private set; }
         public ReactiveCommand<MapVM> SelectMap { get; private set; }
@@ -34,11 +37,14 @@ namespace DiversityPhone.ViewModels {
 
 
         private Pivot _CurrentPivot;
-        public Pivot CurrentPivot {
-            get {
+        public Pivot CurrentPivot
+        {
+            get
+            {
                 return _CurrentPivot;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.CurrentPivot, ref _CurrentPivot, value);
             }
         }
@@ -48,12 +54,14 @@ namespace DiversityPhone.ViewModels {
 
 
         private ObservableAsPropertyHelper<bool> _IsOnlineAvailable;
-        public bool IsOnlineAvailable {
+        public bool IsOnlineAvailable
+        {
             get { return _IsOnlineAvailable.Value; }
         }
 
         private ObservableAsPropertyHelper<IReactiveCollection<MapVM>> _SearchResults;
-        public IReactiveCollection<MapVM> SearchResults {
+        public IReactiveCollection<MapVM> SearchResults
+        {
             get { return _SearchResults.Value; }
         }
 
@@ -63,28 +71,24 @@ namespace DiversityPhone.ViewModels {
         private ReactiveAsyncCommand downloadMap = new ReactiveAsyncCommand();
 
         public MapManagementVM(
+            MapVMServices Services,
             IConnectivityService Network,
-            IMapTransferService MapService,
-            IMapStorageService MapStorage,
-            INotificationService Notifications,
-            [Dispatcher] IScheduler Dispatcher
-            ) {
+            IMapTransferService MapService
+            )
+        {
             Contract.Requires(Network != null);
             Contract.Requires(MapService != null);
-            Contract.Requires(MapStorage != null);
-            Contract.Requires(Notifications != null);
             this.Network = Network;
             this.MapService = MapService;
-            this.MapStorage = MapStorage;
 
 
 
-            this.FirstActivation()
+            Services.Activation.FirstActivation()
                 .Subscribe(_ => getMaps.Execute(null));
 
-            MapList = getMaps.RegisterAsyncFunction(_ => MapStorage.getAllMaps().Select(m => new MapVM(m)))
+            MapList = getMaps.RegisterAsyncFunction(_ => Services.Maps.getAllMaps().Select(m => new MapVM(m)))
                       .SelectMany(vms => vms.ToList())
-                      .ObserveOn(Dispatcher)
+                      .ObserveOn(Services.Dispatcher)
                       .CreateCollection();
             MapList.ItemsAdded
                 .Subscribe(item => _local_map_register.Add(item.ServerKey, Unit.Default));
@@ -95,22 +99,22 @@ namespace DiversityPhone.ViewModels {
             SelectMap = new ReactiveCommand<MapVM>(vm => !vm.IsDownloading);
             SelectMap
                 .Select(vm => vm as IElementVM<Map>)
-                .ToMessage(Messenger, MessageContracts.VIEW);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW);
 
             SelectMap
                 .Select(_ => Page.Previous)
-                .ToMessage(Messenger);
+                .ToMessage(Services.Messenger);
 
             DeleteMap = new ReactiveCommand<MapVM>(vm => !vm.IsDownloading);
             DeleteMap
                 .Do(vm => MapList.Remove(vm))
                 .Select(vm => vm.Model)
                 .Where(map => map != null)
-                .Subscribe(map => MapStorage.deleteMap(map));
+                .Subscribe(map => Services.Maps.deleteMap(map));
 
             _IsOnlineAvailable = this.ObservableToProperty(
-                this.OnActivation()
-                .SelectMany(Network.WifiAvailable().TakeUntil(this.OnDeactivation()))
+                Services.Activation.OnActivation()
+                .SelectMany(Network.WifiAvailable().TakeUntil(Services.Activation.OnDeactivation()))
                 .Do(x => { })
                 , x => x.IsOnlineAvailable, false);
 
@@ -118,12 +122,15 @@ namespace DiversityPhone.ViewModels {
 
             _SearchResults = this.ObservableToProperty<MapManagementVM, IReactiveCollection<MapVM>>(
                 SearchMaps.RegisterAsyncFunction(s => searchMapsImpl(s as string))
-                .ObserveOn(Dispatcher)
-                .Select(result => {
-                    try {
+                .ObserveOn(Services.Dispatcher)
+                .Select(result =>
+                {
+                    try
+                    {
                         return new ReactiveCollection<MapVM>(result.Select(x => new MapVM(null) { ServerKey = x })) as IReactiveCollection<MapVM>;
                     }
-                    catch (Exception) {
+                    catch (Exception)
+                    {
                         return null;
                     }
                 }),
@@ -132,35 +139,39 @@ namespace DiversityPhone.ViewModels {
             DownloadMap = new ReactiveCommand<MapVM>(vm => canBeDownloaded(vm as MapVM), Observable.Empty<Unit>());
             DownloadMap
                 .Where(downloadMap.CanExecute)
-                .CheckConnectivity(Network, Notifications)
+                .CheckConnectivity(Network, Services.Notifications)
                 .Do(vm => vm.IsDownloading = true)
                 .Do(_ => CurrentPivot = Pivot.Local)
                 .Do(vm => MapList.Add(vm))
                 .Subscribe(downloadMap.Execute);
 
-            downloadMap.RegisterAsyncObservable(vm => {
+            downloadMap.RegisterAsyncObservable(vm =>
+            {
                 var vm_t = vm as MapVM;
                 if (vm_t == null)
                     return Observable.Empty<System.Tuple<MapVM, Map>>();
                 else
                     return MapService.downloadMap(vm_t.ServerKey)
-                        .ShowServiceErrorNotifications(Notifications)
-                        .Catch((WebException ex) => {
-                            Notifications.showNotification(DiversityResources.MapManagement_Message_NoPermissions);
+                        .ShowServiceErrorNotifications(Services.Notifications)
+                        .Catch((WebException ex) =>
+                        {
+                            Services.Notifications.showNotification(DiversityResources.MapManagement_Message_NoPermissions);
 
                             return Observable.Empty<Map>();
                         })
                         .Select(map => System.Tuple.Create(vm_t, map));
             })
-            .ObserveOn(Dispatcher)
-            .Select(t => {
+            .ObserveOn(Services.Dispatcher)
+            .Select(t =>
+            {
                 if (t.Item1 != null) // VM
-                    {
+                {
                     if (t.Item2 != null) // Map
-                        {
+                    {
                         t.Item1.SetModel(t.Item2);
                     }
-                    else {
+                    else
+                    {
                         MapList.Remove(t.Item1);
                     }
                 }
@@ -168,19 +179,23 @@ namespace DiversityPhone.ViewModels {
             }).Subscribe(_ => SelectMap.RaiseCanExecuteChanged());
         }
 
-        private bool canBeDownloaded(MapVM vm) {
+        private bool canBeDownloaded(MapVM vm)
+        {
             return vm.Model == null && !vm.IsDownloading;
         }
 
-        private IEnumerable<string> searchMapsImpl(string p) {
-            try {
+        private IEnumerable<string> searchMapsImpl(string p)
+        {
+            try
+            {
                 return
                 MapService.GetAvailableMaps(p).First()
                     .Where(key => !_local_map_register.ContainsKey(key))
                     .Take(10)
                     .ToList();
             }
-            catch (Exception) {
+            catch (Exception)
+            {
                 return Enumerable.Empty<string>();
             }
         }

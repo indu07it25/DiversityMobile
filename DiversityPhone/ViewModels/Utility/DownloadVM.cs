@@ -1,18 +1,17 @@
-﻿namespace DiversityPhone.ViewModels {
+﻿namespace DiversityPhone.ViewModels
+{
     using DiversityPhone.Interface;
     using DiversityPhone.Model;
     using ReactiveUI;
     using ReactiveUI.Xaml;
     using System;
-    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
 
-    public class DownloadVM : PageVMBase {
-        private readonly IDiversityServiceClient Service;
-        private readonly IConnectivityService Connectivity;
-        private readonly IFieldDataService Storage;
-        private readonly IKeyMappingService Mappings;
+    public class DownloadVM : ReactiveObject, IPageServices<OnlineVMServices>
+    {
+        public OnlineVMServices Services { get; private set; }
+
         private readonly EventHierarchyLoader HierarchyLoader;
 
 
@@ -37,17 +36,14 @@
 
 
         public DownloadVM(
+            OnlineVMServices Services,
             IDiversityServiceClient Service,
             IConnectivityService Connectivity,
-            IFieldDataService Storage,
             IKeyMappingService Mappings,
-            EventHierarchyLoader HierarchyLoader,
-            [Dispatcher] IScheduler Dispatcher
-            ) {
-            this.Service = Service;
-            this.Connectivity = Connectivity;
-            this.Storage = Storage;
-            this.Mappings = Mappings;
+            EventHierarchyLoader HierarchyLoader
+            )
+        {
+            this.Services = Services;
             this.HierarchyLoader = HierarchyLoader;
 
             QueryResult = new ReactiveCollection<Event>();
@@ -56,15 +52,15 @@
                 .ToProperty(this, x => x.IsOnlineAvailable);
 
             SearchEvents = new ReactiveAsyncCommand(this.WhenAny(x => x.IsOnlineAvailable, x => x.Value));
-            SearchEvents.ShowInFlightNotification(Notifications, DiversityResources.Download_SearchingEvents);
+            SearchEvents.ShowInFlightNotification(Services.Notifications, DiversityResources.Download_SearchingEvents);
             SearchEvents.ThrownExceptions
-                    .ShowServiceErrorNotifications(Notifications)
-                    .ShowErrorNotifications(Notifications)
+                    .ShowServiceErrorNotifications(Services.Notifications)
+                    .ShowErrorNotifications(Services.Notifications)
                     .Subscribe();
             SearchEvents
                 .RegisterAsyncObservable(query =>
                     Service.GetEventsByLocality(query as string ?? string.Empty)
-                    .TakeUntil(this.OnDeactivation())
+                    .TakeUntil(Services.Activation.OnDeactivation())
                 )
                 .Do(_ => QueryResult.Clear())
                 .Subscribe(QueryResult.AddRange);
@@ -73,8 +69,8 @@
 
             DownloadElement = new ReactiveAsyncCommand(this.WhenAny(x => x.IsOnlineAvailable, x => x.Value));
             DownloadElement.ThrownExceptions
-                .ShowServiceErrorNotifications(Notifications)
-                .ShowErrorNotifications(Notifications)
+                .ShowServiceErrorNotifications(Services.Notifications)
+                .ShowErrorNotifications(Services.Notifications)
                 .Subscribe();
             DownloadElement
                 .RegisterAsyncObservable(ev => IfNotDownloadedYet(ev as Event)
@@ -88,25 +84,29 @@
                 .Select(x => x > 0)
                 .ToProperty(this, x => x.IsDownloading);
 
-            this.OnDeactivation()
-                .Subscribe(_ => Messenger.SendMessage(EventMessage.Default, MessageContracts.INIT));
+            Services.Activation.OnDeactivation()
+                .Subscribe(_ => Services.Messenger.SendMessage(EventMessage.Default, MessageContracts.INIT));
 
             _ElementsDownloadedSubject = new Subject<int>();
-            _ElementsDownloaded = _ElementsDownloadedSubject.ToProperty(this, x => x.ElementsDownloaded, 0, Dispatcher);
+            _ElementsDownloaded = _ElementsDownloadedSubject.ToProperty(this, x => x.ElementsDownloaded, 0, Services.Dispatcher);
         }
 
-        private IObservable<Event> IfNotDownloadedYet(Event ev) {
+        private IObservable<Event> IfNotDownloadedYet(Event ev)
+        {
             if (ev == null)
                 return Observable.Empty<Event>();
 
             return
             Observable.Return(ev)
-                .Where(e => {
-                    if (!Mappings.ResolveToLocalKey(DBObjectType.Event, e.CollectionEventID.Value).HasValue) {
+                .Where(e =>
+                {
+                    if (!Services.Mappings.ResolveToLocalKey(DBObjectType.Event, e.CollectionEventID.Value).HasValue)
+                    {
                         return true;
                     }
-                    else {
-                        Notifications.showNotification(DiversityResources.Download_EventAlreadyDownloaded);
+                    else
+                    {
+                        Services.Notifications.showNotification(DiversityResources.Download_EventAlreadyDownloaded);
                         return false;
                     }
                 });

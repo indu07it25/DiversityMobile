@@ -13,23 +13,23 @@ namespace DiversityPhone.Interface
 
     public static class MappingExtensions
     {
-        public static int? ResolveKey(this IKeyMappingService mapping, IEntity owner)
+        public static int? ResolveKey(this IKeyMappingService mapping, IMappedEntity owner)
         {
-            return mapping.ResolveToServerKey(owner.EntityType, owner.EntityID);
+            return mapping.ResolveToServerKey(owner.EntityType, owner.EntityID.Value);
         }
 
         public static int EnsureKey(this IKeyMappingService mapping, DBObjectType ownerType, int ownerID)
         {
             var key = mapping.ResolveToServerKey(ownerType, ownerID);
             if (!key.HasValue)
-                throw new KeyNotFoundException(string.Format("no Mapping for type {0}, id {1} found", ownerType, ownerID) );
+                throw new KeyNotFoundException(string.Format("no Mapping for type {0}, id {1} found", ownerType, ownerID));
             else
                 return key.Value;
         }
 
-        public static void AddMapping(this IKeyMappingService mapping, IEntity owner, int serverID)
+        public static void AddMapping(this IKeyMappingService mapping, IMappedEntity owner, int serverID)
         {
-            mapping.AddMapping(owner.EntityType, owner.EntityID, serverID);
+            mapping.AddMapping(owner.EntityType, owner.EntityID.Value, serverID);
         }
 
 

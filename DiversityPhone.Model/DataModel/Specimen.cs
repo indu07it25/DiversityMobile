@@ -1,15 +1,17 @@
 ﻿
 
 
-using ReactiveUI;
-using System.Data.Linq;
-using System.Data.Linq.Mapping;
+using System;
 using System.Linq;
+using ReactiveUI;
+using System.Data.Linq.Mapping;
+using System.Data.Linq;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class Specimen : ReactiveObject, IModifyable, IMultimediaOwner
+	public class Specimen : ReactiveObject, IMappedEntity, IMultimediaOwner
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -17,10 +19,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _SpecimenID;
+		private int? _SpecimenID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int SpecimenID
+		public int? SpecimenID
 		{
 			get { return _SpecimenID; }
 			set 
@@ -38,7 +39,6 @@ namespace DiversityPhone.Model
 				
 		private int? _CollectionSpecimenID;
 		[Column(CanBeNull=true)]
-		
 		public int? CollectionSpecimenID
 		{
 			get { return _CollectionSpecimenID; }
@@ -58,7 +58,6 @@ namespace DiversityPhone.Model
 		
 		private int _EventID;
 		[Column]
-		
 		public int EventID
 		{
 			get { return _EventID; }
@@ -78,7 +77,6 @@ namespace DiversityPhone.Model
 		
 		private string _AccessionNumber;
 		[Column]
-		
 		public string AccessionNumber
 		{
 			get { return _AccessionNumber; }
@@ -98,7 +96,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -122,36 +119,21 @@ namespace DiversityPhone.Model
         }
 
 
-        public static IQueryOperations<Specimen> Operations
-        {
-            get;
-            private set;
-        }
-
-        static Specimen()
-        {
-            Operations = new QueryOperations<Specimen>(
-                //Smallerthan
-                          (q, spec) => q.Where(row => row.SpecimenID < spec.SpecimenID),
-                //Equals
-                          (q, spec) => q.Where(row => row.SpecimenID == spec.SpecimenID),
-                //Orderby
-                          (q) => q.OrderBy(spec => spec.SpecimenID),
-                //FreeKey
-                          (q, spec) =>
-                          {
-                              spec.SpecimenID = QueryOperations<Specimen>.FindFreeIntKey(q, row => row.SpecimenID);
-                          });
-        }
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.Specimen; }
         }
 
-        public int EntityID
+        public int? EntityID
         {
             get { return SpecimenID; }
+			set { SpecimenID = value; }
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionSpecimenID; }
+			set { CollectionSpecimenID = value; }
         }
     }
 
@@ -161,7 +143,7 @@ namespace DiversityPhone.Model
         public static bool IsObservation(this Specimen spec)
         {
             return spec.AccessionNumber == null
-                && !spec.IsNew();
+                && spec.SpecimenID.HasValue;
         }
 
         public static Specimen MakeObservation(this Specimen spec)

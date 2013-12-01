@@ -6,6 +6,7 @@
     
 #>
 
+using DiversityPhone.Interface;
 using System;
 using System.Linq;
 using ReactiveUI;
@@ -15,14 +16,14 @@ using System.Data.Linq.Mapping;
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class Event : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner
+	public class Event : ReactiveObject, ILocalizable, IMappedEntity, IMultimediaOwner, IModifyable
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
 		private Binary version;
 #pragma warning restore 0169
 
-<# Row("int", "EventID", RowKind.Key); #>   
+<# Row("int?", "EventID", RowKind.Key); #>   
 <# Row("int?", "CollectionEventID", RowKind.Nullable); #>   
 <# Row("int?", "SeriesID", RowKind.Nullable); #>   
 <# Row("DateTime", "CollectionDate", RowKind.NoUpdateCheck); #>    
@@ -42,37 +43,22 @@ namespace DiversityPhone.Model
 
  <# EnableMemberwiseClone("Event"); #>
        
-        public static IQueryOperations<Event> Operations
-        {
-            get;
-            private set;
-        }
-
-        static Event()
-        {
-            Operations = new QueryOperations<Event>(
-                //Smallerthan
-                          (q, ev) => q.Where(row => row.EventID < ev.EventID),
-                //Equals
-                          (q, ev) => q.Where(row => row.EventID == ev.EventID),
-                //Orderby
-                          (q) => q.OrderBy(ev => ev.EventID),
-                //FreeKey
-                          (q, ev) =>
-                          {
-                              ev.EventID = QueryOperations<Event>.FindFreeIntKey(q, row => row.EventID);
-                          });
-        }       
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.Event; }
         }
 
 
-        public int EntityID
+        public int? EntityID
         {
             get { return EventID; }
+			set { EventID = value;}
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionEventID; }
+			set { CollectionEventID = value;}
         }
     }	
 }

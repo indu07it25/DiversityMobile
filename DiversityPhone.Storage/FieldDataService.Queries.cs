@@ -1,64 +1,61 @@
-﻿using DiversityPhone.Model;
-using System.Linq;
+﻿using DiversityPhone.Interface;
+using System;
+using System.Linq.Expressions;
 
-namespace DiversityPhone.Services
+namespace DiversityPhone.Model
 {
-    static class Queries
+    public static class Queries
     {
-        internal static IQueryable<MultimediaObject> Multimedia(IMultimediaOwner owner, DiversityDataContext ctx)
+        public static Expression<Func<MultimediaObject, bool>> Multimedia(this IMultimediaOwner owner)
         {
-            return from mmo in ctx.MultimediaObjects
-                   where mmo.OwnerType == owner.EntityType && mmo.RelatedId == owner.EntityID
-                   select mmo;
+            return mmo => mmo.OwnerType == owner.EntityType && mmo.RelatedId == owner.EntityID;
         }
 
-        internal static IQueryable<Event> Events(EventSeries es, DiversityDataContext ctx)
+        public static Expression<Func<Event, bool>> Events(this EventSeries es)
         {
-            return from ev in ctx.Events
-                   where ev.SeriesID == es.SeriesID
-                   select ev;
+            if (es.IsNoEventSeries())
+            {
+                return ev => ev.SeriesID == null;
+            }
+            else
+            {
+                return ev => ev.SeriesID == es.SeriesID;
+            }
         }
 
-        internal static IQueryable<GeoPointForSeries> GeoPoints(EventSeries es, DiversityDataContext ctx)
+        public static Expression<Func<Localization, bool>> Localizations(this EventSeries es)
         {
-            return from gp in ctx.GeoTour
-                   where gp.SeriesID == es.SeriesID
-                   select gp;
+            return gp => gp.RelatedID == es.SeriesID.Value;
         }
 
-        internal static IQueryable<Specimen> Specimen(Event ev, DiversityDataContext ctx)
+        public static Expression<Func<Specimen, bool>> Specimen(this Event ev)
         {
-            return from s in ctx.Specimen
-                   where s.EventID == ev.EventID
-                   select s;
+            return s => s.EventID == ev.EventID;
         }
 
-        internal static IQueryable<EventProperty> Properties(Event ev, DiversityDataContext ctx)
+        public static Expression<Func<EventProperty, bool>> Properties(this Event ev)
         {
-            return from p in ctx.EventProperties
-                   where p.EventID == ev.EventID
-                   select p;
+            return p => p.EventID == ev.EventID;
         }
 
-        internal static IQueryable<IdentificationUnit> Units(Specimen s, DiversityDataContext ctx)
+        public static Expression<Func<IdentificationUnit, bool>> ToplevelUnits(this Specimen s)
         {
-            return from iu in ctx.IdentificationUnits
-                   where iu.SpecimenID == s.SpecimenID
-                   select iu;
+            return iu => iu.SpecimenID == s.SpecimenID && iu.RelatedUnitID == null;
         }
 
-        internal static IQueryable<IdentificationUnit> SubUnits(IdentificationUnit u, DiversityDataContext ctx)
+        public static Expression<Func<IdentificationUnit, bool>> Units(this Specimen s)
         {
-            return from iu in ctx.IdentificationUnits
-                   where iu.RelatedUnitID == u.UnitID
-                   select iu;
+            return iu => iu.SpecimenID == s.SpecimenID;
         }
 
-        internal static IQueryable<IdentificationUnitAnalysis> Analyses(IdentificationUnit iu, DiversityDataContext ctx)
+        public static Expression<Func<IdentificationUnit, bool>> SubUnits(this IdentificationUnit u)
         {
-            return from a in ctx.IdentificationUnitAnalyses
-                   where a.UnitID == iu.UnitID
-                   select a;
+            return iu => iu.RelatedUnitID == u.UnitID;
+        }
+
+        public static Expression<Func<IdentificationUnitAnalysis, bool>> Analyses(this IdentificationUnit iu)
+        {
+            return a => a.UnitID == iu.UnitID;
         }
     }
 

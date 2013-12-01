@@ -1,76 +1,46 @@
 ﻿namespace DiversityPhone.Interface
 {
     using DiversityPhone.Model;
-    using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
 
-    public interface IFieldDataService
+    public interface IFieldDataService : IRepository
     {
         void ClearDatabase();
 
         IEnumerable<IElementVM> CollectModifications();
-
-        IList<EventSeries> getAllEventSeries();
-        EventSeries getEventSeriesByID(int? id);
-        void addOrUpdateEventSeries(EventSeries newSeries);
-        void deleteEventSeries(EventSeries es);
-
-        IEnumerable<GeoPointForSeries> getGeoPointsForSeries(int SeriesID);
-        void addGeoPoint(GeoPointForSeries gp);
-        void deleteGeoPoint(GeoPointForSeries gp);
-
-        IEnumerable<Event> getAllEvents();
-        IEnumerable<Event> getEventsForSeries(EventSeries es);
-        Event getEventByID(int id);
-        void addOrUpdateEvent(Event ev);
-
-        IEnumerable<EventProperty> getPropertiesForEvent(int eventID);
-        EventProperty getPropertyByID(int eventId, int propertyId);
-        void addOrUpdateCollectionEventProperty(EventProperty cep);
-
-        IEnumerable<Specimen> getAllSpecimen();
-        IEnumerable<Specimen> getSpecimenForEvent(Event ev);
-        IEnumerable<Specimen> getSpecimenWithoutEvent();
-        Specimen getSpecimenByID(int id);
-        void addOrUpdateSpecimen(Specimen spec);
-
-        IList<IdentificationUnit> getIUForSpecimen(int specimenID);
-        IEnumerable<IdentificationUnit> getTopLevelIUForSpecimen(int specimenID);
-        IEnumerable<IdentificationUnit> getSubUnits(IdentificationUnit iu);
-        IdentificationUnit getIdentificationUnitByID(int id);
-        void addOrUpdateIUnit(IdentificationUnit iu);
-
-        IList<IdentificationUnitAnalysis> getIUANForIU(IdentificationUnit iu);
-        IdentificationUnitAnalysis getIUANByID(int analysisID);
-        void addOrUpdateIUA(IdentificationUnitAnalysis iua);
-
-        IList<MultimediaObject> getMultimediaForObject(IMultimediaOwner owner);
-        MultimediaObject getMultimediaByID(int id);
-        MultimediaObject getMultimediaByURI(string uri);
-        IEnumerable<MultimediaObject> getModifiedMMOs();
-        void addMultimediaObject(MultimediaObject mmo);
-        void deleteMMO(MultimediaObject toDeleteMMO);
-
-        void add<T>(T element) where T : class, IModifyable;
-        void addAll<T>(IEnumerable<T> elements) where T : class, IModifyable;
-        void update<T>(T element, Action<T> updateValues) where T : class;
-        void delete<T>(T element) where T : class;
-        T get<T>(int? id) where T : class, IEntity;
     }
 
-    public static class FieldDataMixin
+    public static class FieldDataExtensions
     {
-        public static T MarkUploaded<T>(this IFieldDataService This, T entity) where T : class, IModifyable
+        public static IEnumerable<MultimediaObject> GetMultimediaForObject(this IFieldDataService This, IMultimediaOwner owner)
         {
-            Contract.Requires(This != null);
-            Contract.Requires(entity != null);
-            Contract.Requires(entity.ModificationState == ModificationState.Modified);
-            //Contract.Ensures(entity.ModificationState == ModificationState.Unmodified);
+            return This.Get<MultimediaObject>(mmo => mmo.OwnerType == owner.EntityType &&
+                                                     mmo.RelatedId == owner.EntityID);
 
-            This.update(entity, e => e.ModificationState = ModificationState.Unmodified);
-
-            return entity;
         }
+
+        public static IEnumerable<MultimediaObject> GetNewMultimedia(this IFieldDataService This)
+        {
+            return This.Get<MultimediaObject>(mmo => mmo.CollectionURI == null);
+        }
+
+        public static IEnumerable<Event> GetEventsForSeries(this IFieldDataService This, EventSeries es)
+        {
+            //Workaround for the fact, that ev.SeriesID == es.SeriesID doesn't work for null values
+            if (es.IsNoEventSeries())
+            {
+                return This.Get<Event>(x => x.SeriesID == null);
+            }
+            else
+            {
+                return This.Get<Event>(x => x.SeriesID == es.SeriesID);
+            }
+        }
+
+        public static IEnumerable<IdentificationUnit> GetTopLevelIUForSpecimen(this IFieldDataService This, int specimenID)
+        {
+            return This.Get<IdentificationUnit>(x => x.SpecimenID == specimenID && x.RelatedUnitID == null);
+        }
+
     }
 }

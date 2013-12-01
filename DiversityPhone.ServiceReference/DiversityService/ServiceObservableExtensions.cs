@@ -51,7 +51,7 @@ namespace DiversityPhone.Services
                    {
                        return Observable.Throw<T>(new ServiceNotAvailableException(ex.Message, ex));
                    }
-                  
+
                    return Observable.Throw<T>(ex);
                });
         }
@@ -91,7 +91,7 @@ namespace DiversityPhone.Services
             }).ConvertErrors();
         }
 
-        public static IObservable<Unit> StoreMapping(this IObservable<int> This, IEntity owner, IKeyMappingService mappingService)
+        public static IObservable<Unit> StoreMapping(this IObservable<int> This, IMappedEntity owner, IKeyMappingService mappingService)
         {
             return This.Do(id => mappingService.AddMapping(owner, id))
                 .Select(_ => Unit.Default);

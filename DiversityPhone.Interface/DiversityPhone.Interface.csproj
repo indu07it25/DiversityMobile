@@ -129,12 +129,14 @@
     <Compile Include="ICreateViewModels.cs" />
     <Compile Include="ICurrentCredentials.cs" />
     <Compile Include="IDiversityServiceClient.cs" />
+    <Compile Include="IEditPolicy.cs" />
     <Compile Include="IElementVM.cs" />
     <Compile Include="IFieldDataService.cs" />
     <Compile Include="IKeyMappingService.cs" />
     <Compile Include="ILocationService.cs" />
     <Compile Include="IMapStorageService.cs" />
     <Compile Include="INotificationService.cs" />
+    <Compile Include="IRepository.cs" />
     <Compile Include="ISettingsService.cs" />
     <Compile Include="IStoreMultimedia.cs" />
     <Compile Include="ITaxonService.cs" />

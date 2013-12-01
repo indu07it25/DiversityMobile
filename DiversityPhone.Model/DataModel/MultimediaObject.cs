@@ -1,15 +1,16 @@
 ﻿
 
+using DiversityPhone.Interface;
 using ReactiveUI;
 using System;
+using System.Linq;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using System.Linq;
 
 namespace DiversityPhone.Model
 {
     [Table]
-    public class MultimediaObject : ReactiveObject, IModifyable, IEquatable<MultimediaObject>
+    public class MultimediaObject : ReactiveObject, IEquatable<MultimediaObject>, IModifyable, IWriteableEntity
     {
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -17,10 +18,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _MMOID;
+		private int? _MMOID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int MMOID
+		public int? MMOID
 		{
 			get { return _MMOID; }
 			set 
@@ -39,7 +39,6 @@ namespace DiversityPhone.Model
 		
 		private DBObjectType _OwnerType;
 		[Column]
-		
 		public DBObjectType OwnerType
 		{
 			get { return _OwnerType; }
@@ -59,7 +58,6 @@ namespace DiversityPhone.Model
 		
 		private int _RelatedId;
 		[Column]
-		
 		public int RelatedId
 		{
 			get { return _RelatedId; }
@@ -79,7 +77,6 @@ namespace DiversityPhone.Model
 		
 		private string _Uri;
 		[Column]
-		
 		public string Uri
 		{
 			get { return _Uri; }
@@ -99,7 +96,6 @@ namespace DiversityPhone.Model
 		
 		private MediaType _MediaType;
 		[Column]
-		
 		public MediaType MediaType
 		{
 			get { return _MediaType; }
@@ -120,7 +116,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -140,7 +135,6 @@ namespace DiversityPhone.Model
 		
 		private DateTime _TimeStamp;
 		[Column]
-		
 		public DateTime TimeStamp
 		{
 			get { return _TimeStamp; }
@@ -191,15 +185,6 @@ namespace DiversityPhone.Model
 			}
 		}
 
-
-        
-
-        public static IQueryOperations<MultimediaObject> Operations
-        {
-            get;
-            private set;
-        }
-
         public override int GetHashCode()
         {
             return MMOID.GetHashCode() ^
@@ -213,25 +198,7 @@ namespace DiversityPhone.Model
 		{
 			TimeStamp = DateTime.Now;
 		}
-
-        static MultimediaObject()
-        {
-            Operations = new QueryOperations<MultimediaObject>(
-                //Smallerthan
-                         (q, mmo) => q.Where(row => row.MMOID < mmo.MMOID),
-                //Equals
-                         (q, mmo) => q.Where(row => row.MMOID == mmo.MMOID),
-                //Orderby
-                         (q) => from mmo in q
-                                orderby mmo.MediaType, mmo.OwnerType, mmo.RelatedId
-                                select mmo,
-                //FreeKey
-                         (q, mmo) =>
-                         {
-                             mmo.MMOID = QueryOperations<MultimediaObject>.FindFreeIntKey(q, row => row.MMOID);
-                         });
-        }
-
+        
         public bool Equals(MultimediaObject other)
         {
             return base.Equals(other) ||
@@ -242,6 +209,12 @@ namespace DiversityPhone.Model
                 this.Uri == other.Uri &&                
                 this.ModificationState == other.ModificationState);
         }
+
+		public int? EntityID
+		{
+			get { return MMOID; }
+			set { MMOID = value; }
+		}
     }
 }
  

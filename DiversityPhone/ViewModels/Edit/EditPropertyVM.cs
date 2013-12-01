@@ -1,18 +1,15 @@
-﻿namespace DiversityPhone.ViewModels {
+﻿namespace DiversityPhone.ViewModels
+{
     using DiversityPhone.Interface;
     using DiversityPhone.Model;
     using ReactiveUI;
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics.Contracts;
     using System.Linq;
-    using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
-    public class EditPropertyVM : EditPageVMBase<EventProperty> {
-        readonly IVocabularyService Vocabulary;
-        readonly IFieldDataService Storage;
-
+    public class EditPropertyVM : EditPageVMBase<EventProperty>
+    {
         private ObservableAsyncMRUCache<int, IObservable<PropertyName>> _PropertyNamesCache;
 
         #region Properties
@@ -24,11 +21,14 @@
 
         private string _FilterString;
 
-        public string FilterString {
-            get {
+        public string FilterString
+        {
+            get
+            {
                 return _FilterString;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.FilterString, ref _FilterString, value);
             }
         }
@@ -44,35 +44,29 @@
 
 
         public EditPropertyVM(
-            IVocabularyService Vocabulary,
-            IFieldDataService Storage,
-            [Dispatcher] IScheduler Dispatcher,
-            [ThreadPool] IScheduler ThreadPool
-            ) {
-            Contract.Requires(Vocabulary != null);
-            Contract.Requires(Storage != null);
-            this.Vocabulary = Vocabulary;
-            this.Storage = Storage;
-
+            DataVMServices Services
+            )
+            : base(Services)
+        {
             DefaultProperties = new List<Property>() { NoProperty };
 
-            var properties = Messenger.Listen<EventMessage>(MessageContracts.INIT)
-                .ObserveOn(ThreadPool)
-                .Select(_ => Vocabulary.getAllProperties().ToList() as IList<Property>
+            var properties = Services.Messenger.Listen<EventMessage>(MessageContracts.INIT)
+                .ObserveOn(Services.ThreadPool)
+                .Select(_ => Services.Vocabulary.getAllProperties().ToList() as IList<Property>
                 ).Publish();
             properties.Connect();
 
             // Broadcast latest Properties for other VMs to use
-            Messenger.RegisterMessageSource(properties);
+            Services.Messenger.RegisterMessageSource(properties);
 
             properties
                 .Select(props => new ObservableAsyncMRUCache<int, IObservable<PropertyName>>(
                         propertyID =>
                             Observable.Start(
-                            () => Vocabulary
+                            () => Services.Vocabulary
                             .getPropertyNames(propertyID)
-                            .ToObservable(ThreadPool)
-                            .Replay(ThreadPool))
+                            .ToObservable(Services.ThreadPool)
+                            .Replay(Services.ThreadPool))
                             .Do(s => s.Connect())
                             .Select(s => s as IObservable<PropertyName>),
                             10
@@ -81,31 +75,36 @@
 
             _IsNew = this.ObservableToProperty(ModelByVisitObservable.Select(m => m.IsNew()), x => x.IsNew, false);
 
-            Properties = new ListSelectionHelper<Property>(Dispatcher);
+            Properties = new ListSelectionHelper<Property>(Services.Dispatcher);
 
-            properties.SampleMostRecent(this.OnActivation())
-                .Zip(ModelByVisitObservable, (props, evprop) => {
+            properties.SampleMostRecent(Services.Activation.OnActivation())
+                .Zip(ModelByVisitObservable, (props, evprop) =>
+                {
                     var isNew = evprop.IsNew();
-                    if (isNew) { //New Property, only show unused ones
-                        var usedPropertyIDs = (from p in Storage.getPropertiesForEvent(evprop.EventID)
+                    if (isNew)
+                    { //New Property, only show unused ones
+                        var usedPropertyIDs = (from p in Services.Storage.Get<EventProperty>(x => x.EventID == evprop.EventID)
                                                select p.PropertyID).ToList();
                         return from p in props
                                where !usedPropertyIDs.Contains(p.PropertyID)
                                select p;
                     }
-                    else { //Editing property -> can't change type
+                    else
+                    { //Editing property -> can't change type
                         return from p in props
                                where p.PropertyID == evprop.PropertyID
                                select p;
                     }
                 })
                 .Select(coll => coll.ToList() as IList<Property>)
-                .Do(list => {
-                    if (list.Count > 1) {
+                .Do(list =>
+                {
+                    if (list.Count > 1)
+                    {
                         list.Insert(0, NoProperty);
                     }
                 })
-                .ObserveOn(Dispatcher)
+                .ObserveOn(Services.Dispatcher)
                 .Subscribe(Properties.ItemsObserver);
 
             Properties.ItemsObservable
@@ -113,9 +112,10 @@
                 .Select(items => items[0])
                 .Subscribe(i => Properties.SelectedItem = i);
 
-            Values = new ListSelectionHelper<PropertyName>(Dispatcher);
+            Values = new ListSelectionHelper<PropertyName>(Services.Dispatcher);
             Properties.SelectedItemObservable
-                .SelectMany(prop => {
+                .SelectMany(prop =>
+                {
                     return
                         (prop == null || prop == NoProperty || _PropertyNamesCache == null)
                         ? Observable.Return(Observable.Return(NoValue))
@@ -127,7 +127,8 @@
                         .Select(filter => (filter ?? string.Empty).ToLowerInvariant())
                         .Throttle(TimeSpan.FromMilliseconds(500))
                         .DistinctUntilChanged(),
-                        (props, filter) => {
+                        (props, filter) =>
+                        {
                             var separators = new char[] { ' ', '-' };
                             int max_values = 10;
                             return (from x in props
@@ -141,7 +142,7 @@
                         })
                 //Reselect value that was selected                    
                     .Select(coll => coll as IList<PropertyName>)
-                    .ObserveOn(Dispatcher)
+                    .ObserveOn(Services.Dispatcher)
                     .Do(values => Values.SelectedItem =
                         values
                             .Where(item => item.PropertyUri == Current.Model.PropertyUri)
@@ -155,7 +156,8 @@
         }
 
 
-        private IObservable<bool> CanSaveObs() {
+        private IObservable<bool> CanSaveObs()
+        {
             var propSelected = Properties.SelectedItemObservable
                 .Select(x => x != NoProperty && x != null)
                 .StartWith(false);
@@ -168,7 +170,8 @@
         }
 
 
-        protected override void UpdateModel() {
+        protected override void UpdateModel()
+        {
             Current.Model.PropertyID = Properties.SelectedItem.PropertyID;
             Current.Model.PropertyUri = Values.SelectedItem.PropertyUri;
             Current.Model.DisplayText = Values.SelectedItem.DisplayText;

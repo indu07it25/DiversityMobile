@@ -7,8 +7,10 @@ using System.Linq;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace DiversityPhone.ViewModels {
-    public class ElementMultimediaVM : ReactiveCollection<MultimediaObjectVM>, IObserver<IMultimediaOwner> {
+namespace DiversityPhone.ViewModels
+{
+    public class ElementMultimediaVM : ReactiveCollection<MultimediaObjectVM>, IObserver<IMultimediaOwner>
+    {
         readonly IFieldDataService Storage;
 
         private ISubject<IMultimediaOwner> ownerSubject = new ReplaySubject<IMultimediaOwner>(1);
@@ -20,15 +22,17 @@ namespace DiversityPhone.ViewModels {
         public ReactiveCommand AddMultimedia { get; private set; }
         public IObservable<IMultimediaOwner> NewMultimediaObservable { get; private set; }
 
-        public ElementMultimediaVM(IFieldDataService storage, IMessageBus Messenger) {
+        public ElementMultimediaVM(IFieldDataService storage, IMessageBus Messenger)
+        {
             this.Storage = storage;
 
             getMultimedia = new ReactiveAsyncCommand();
-            getMultimedia.RegisterAsyncFunction(own => {
+            getMultimedia.RegisterAsyncFunction(own =>
+            {
                 var owner = own as IMultimediaOwner;
                 if (owner == null)
                     return Enumerable.Empty<MultimediaObjectVM>();
-                return storage.getMultimediaForObject(owner)
+                return storage.GetMultimediaForObject(owner)
                     .Select(mmo => new MultimediaObjectVM(mmo))
                     .ToList();
             }).SelectMany(vms => vms)
@@ -61,15 +65,18 @@ namespace DiversityPhone.ViewModels {
 
         }
 
-        public void OnCompleted() {
+        public void OnCompleted()
+        {
             ownerSubject.OnCompleted();
         }
 
-        public void OnError(Exception exception) {
+        public void OnError(Exception exception)
+        {
             ownerSubject.OnError(exception);
         }
 
-        public void OnNext(IMultimediaOwner value) {
+        public void OnNext(IMultimediaOwner value)
+        {
             ownerSubject.OnNext(value);
         }
     }

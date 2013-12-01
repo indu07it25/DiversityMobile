@@ -4,25 +4,27 @@ using ReactiveUI;
 using ReactiveUI.Xaml;
 using System;
 using System.Reactive;
-using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
-namespace DiversityPhone.ViewModels.Utility {
-    public interface IUploadVM<T> {
+namespace DiversityPhone.ViewModels.Utility
+{
+    public interface IUploadVM<T>
+    {
         MultipleSelectionHelper<T> Items { get; }
         IObservable<Unit> Refresh();
         IObservable<Tuple<int, int>> Upload();
     }
 
-    public class UploadVM : PageVMBase {
-        public enum Pivots {
+    public class UploadVM : ReactiveObject, IPageServices<OnlineVMServices>
+    {
+        public enum Pivots
+        {
             data,
             multimedia
         }
 
+        public OnlineVMServices Services { get; private set; }
 
-
-        private readonly IFieldDataService Storage;
         private readonly IConnectivityService Connectivity;
         private readonly IDiversityServiceClient Service;
         private readonly IKeyMappingService Mapping;
@@ -38,11 +40,14 @@ namespace DiversityPhone.ViewModels.Utility {
 
         private Pivots _CurrentPivot;
 
-        public Pivots CurrentPivot {
-            get {
+        public Pivots CurrentPivot
+        {
+            get
+            {
                 return _CurrentPivot;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.CurrentPivot, ref _CurrentPivot, value);
             }
         }
@@ -58,21 +63,15 @@ namespace DiversityPhone.ViewModels.Utility {
         public bool IsUploading { get { return _IsUploading.Value; } }
         private ObservableAsPropertyHelper<bool> _IsUploading;
 
-
-
-
-
         public UploadVM(
+            OnlineVMServices Services,
             IUploadVM<MultimediaObjectVM> Multimedia,
             IUploadVM<IElementVM> FieldData,
-            IFieldDataService Storage,
-            INotificationService Notifications,
             IConnectivityService Connectivity,
             IDiversityServiceClient Service,
-            IKeyMappingService Mapping,
-            [Dispatcher] IScheduler Dispatcher
-            ) {
-            this.Storage = Storage;
+            IKeyMappingService Mapping
+            )
+        {
             this.Connectivity = Connectivity;
             this.Service = Service;
             this.Mapping = Mapping;
@@ -81,19 +80,20 @@ namespace DiversityPhone.ViewModels.Utility {
             this._FieldData = FieldData;
 
             var pivotOnChangeAndActivation =
-            this.OnActivation()
+            Services.Activation.OnActivation()
                 .SelectMany(_ => this.WhenAny(x => x.CurrentPivot, x => x.Value)
                     .Distinct()
                 );
 
             pivotOnChangeAndActivation
-                .Select(pivot => {
+                .Select(pivot =>
+                {
                     if (pivot == Pivots.data)
-                        return _FieldData.Refresh().DisplayProgress(Notifications, DiversityResources.Sync_Info_CollectingModifications);
+                        return _FieldData.Refresh().DisplayProgress(Services.Notifications, DiversityResources.Sync_Info_CollectingModifications);
                     else
-                        return _Multimedia.Refresh().DisplayProgress(Notifications, DiversityResources.Sync_Info_CollectingMultimedia);
+                        return _Multimedia.Refresh().DisplayProgress(Services.Notifications, DiversityResources.Sync_Info_CollectingMultimedia);
                 })
-                .SelectMany(refresh => refresh.TakeUntil(this.OnDeactivation()))
+                .SelectMany(refresh => refresh.TakeUntil(Services.Activation.OnDeactivation()))
                 .Subscribe();
 
 
@@ -109,24 +109,26 @@ namespace DiversityPhone.ViewModels.Utility {
 
             _IsUploading =
                 StartUpload
-                .Select(_ => {
+                .Select(_ =>
+                {
                     if (CurrentPivot == Pivots.data)
                         return _FieldData.Upload();
                     else
                         return _Multimedia.Upload();
                 })
                 .Select(upload => upload
-                    .ShowServiceErrorNotifications(Notifications)
-                    .ShowErrorNotifications(Notifications)
+                    .ShowServiceErrorNotifications(Services.Notifications)
+                    .ShowErrorNotifications(Services.Notifications)
                     .TakeUntil(CancelUpload))
-                .Do(upload => {
+                .Do(upload =>
+                {
                     IObservable<string> notificationStream;
                     if (CurrentPivot == Pivots.data)
                         notificationStream = upload.Select(progress => string.Format("{0} ({1}/{2})", DiversityResources.Sync_Info_UploadingElement, progress.Item1, progress.Item2));
                     else
                         notificationStream = upload.Select(progress => string.Format("{0} ({1}/{2})", DiversityResources.Sync_Info_UploadingMultimedia, progress.Item1, progress.Item2));
 
-                    Notifications.showProgress(notificationStream);
+                    Services.Notifications.showProgress(notificationStream);
                 })
                 .SelectMany(upload =>
                     upload.IgnoreElements()
@@ -134,12 +136,12 @@ namespace DiversityPhone.ViewModels.Utility {
                     .StartWith(true)
                     .Concat(Observable.Return(false))
                     )
-                    .ToProperty(this, x => x.IsUploading, scheduler: Dispatcher);
+                    .ToProperty(this, x => x.IsUploading, scheduler: Services.Dispatcher);
 
 
-            this.OnDeactivation()
+            Services.Activation.OnDeactivation()
                 .Select(_ => EventMessage.Default)
-                .ToMessage(Messenger, MessageContracts.INIT);
+                .ToMessage(Services.Messenger, MessageContracts.INIT);
         }
 
 

@@ -1,20 +1,24 @@
-﻿namespace DiversityPhone.ViewModels {
-    using DiversityPhone.Interface;
+﻿namespace DiversityPhone.ViewModels
+{
     using DiversityPhone.Model;
     using ReactiveUI;
     using System;
     using System.Reactive.Linq;
 
-    public class EditCSVM : EditPageVMBase<Specimen> {
+    public class EditCSVM : EditPageVMBase<Specimen>
+    {
         #region Properties
         private string _AccessionNumber;
-        public string AccessionNumber {
+        public string AccessionNumber
+        {
             get { return _AccessionNumber; }
             set { this.RaiseAndSetIfChanged(x => x.AccessionNumber, ref _AccessionNumber, value); }
         }
         #endregion
 
-        public EditCSVM(IMessageBus Messenger, INotificationService Notifications) {
+        public EditCSVM(DataVMServices Services)
+            : base(Services)
+        {
             //Read-Only Eigenschaften direkt ans Model Binden
             //Nur Veränderbare Properties oder abgeleitete so binden
             ModelByVisitObservable
@@ -24,7 +28,8 @@
             CanSave().Subscribe(CanSaveSubject.OnNext);
         }
 
-        protected IObservable<bool> CanSave() {
+        protected IObservable<bool> CanSave()
+        {
             IObservable<bool> accessionNumber = this.ObservableForProperty(x => x.AccessionNumber)
                 .Select(desc => !string.IsNullOrWhiteSpace(desc.Value))
                 .StartWith(false);
@@ -32,7 +37,8 @@
             return canSave;
         }
 
-        protected override void UpdateModel() {
+        protected override void UpdateModel()
+        {
             //Nur Veränderbare Eigenschaften übernehmen.
             Current.Model.AccessionNumber = AccessionNumber;
         }

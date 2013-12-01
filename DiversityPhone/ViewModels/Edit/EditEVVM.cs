@@ -7,8 +7,10 @@ using System.Reactive.Disposables;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
 
-namespace DiversityPhone.ViewModels {
-    public class EditEVVM : EditPageVMBase<Event> {
+namespace DiversityPhone.ViewModels
+{
+    public class EditEVVM : EditPageVMBase<Event>
+    {
         readonly ILocationService Geolocation;
         BehaviorSubject<Coordinate> _latest_location = new BehaviorSubject<Coordinate>(Coordinate.Unknown);
         IDisposable _location_subscription = Disposable.Empty;
@@ -16,44 +18,53 @@ namespace DiversityPhone.ViewModels {
 
         #region Properties
         private string _LocalityDescription;
-        public string LocalityDescription {
+        public string LocalityDescription
+        {
             get { return _LocalityDescription; }
             set { this.RaiseAndSetIfChanged(x => x.LocalityDescription, ref _LocalityDescription, value); }
         }
 
         private string _HabitatDescription;
-        public string HabitatDescription {
+        public string HabitatDescription
+        {
             get { return _HabitatDescription; }
             set { this.RaiseAndSetIfChanged(x => x.HabitatDescription, ref _HabitatDescription, value); }
         }
 
         private DateTime _CollectionDate;
-        public DateTime CollectionDate {
+        public DateTime CollectionDate
+        {
             get { return _CollectionDate; }
             set { this.RaiseAndSetIfChanged(x => x.CollectionDate, ref _CollectionDate, value); }
         }
         #endregion
 
         public EditEVVM(
+            DataVMServices Services,
             ILocationService Geolocation
-            ) {
+            )
+            : base(Services)
+        {
             Contract.Requires(Geolocation != null);
             this.Geolocation = Geolocation;
 
             Observable.CombineLatest(
             CurrentModelObservable.Where(m => m.IsNew()),
-            ActivationObservable,
+            Services.Activation.ActivationObservable,
             (_, act) => act
             )
-                .Subscribe(active => {
-                        if (active) {
-                            _latest_location.OnNext(Coordinate.Unknown);
-                            _location_subscription = Geolocation.Location().Where(l => !l.IsUnknown()).Subscribe(_latest_location);
-                        }
-                        else {
-                            _location_subscription.Dispose();
-                        }
-                    });
+                .Subscribe(active =>
+                {
+                    if (active)
+                    {
+                        _latest_location.OnNext(Coordinate.Unknown);
+                        _location_subscription = Geolocation.Location().Where(l => !l.IsUnknown()).Subscribe(_latest_location);
+                    }
+                    else
+                    {
+                        _location_subscription.Dispose();
+                    }
+                });
 
             ModelByVisitObservable
                 .Select(ev => ev.CollectionDate)
@@ -70,7 +81,8 @@ namespace DiversityPhone.ViewModels {
             CanSave().Subscribe(CanSaveSubject.OnNext);
         }
 
-        protected override void UpdateModel() {
+        protected override void UpdateModel()
+        {
             if (!Current.Model.IsLocalized())
                 Current.Model.SetCoordinates(_latest_location.First());
             Current.Model.LocalityDescription = LocalityDescription;
@@ -78,7 +90,8 @@ namespace DiversityPhone.ViewModels {
             Current.Model.CollectionDate = CollectionDate;
         }
 
-        protected IObservable<bool> CanSave() {
+        protected IObservable<bool> CanSave()
+        {
             return this.ObservableForProperty(x => x.LocalityDescription)
                 .Select(desc => !string.IsNullOrWhiteSpace(desc.Value))
                 .StartWith(false);

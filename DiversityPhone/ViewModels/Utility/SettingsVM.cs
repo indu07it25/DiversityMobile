@@ -7,8 +7,11 @@ using System.Reactive;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 
-namespace DiversityPhone.ViewModels.Utility {
-    public partial class SettingsVM : PageVMBase {
+namespace DiversityPhone.ViewModels.Utility
+{
+    public partial class SettingsVM : ReactiveObject
+    {
+        readonly PageVMServices Services;
         readonly ISettingsService Settings;
         readonly ICleanupData Cleanup;
         readonly IConnectivityService Connectivity;
@@ -18,11 +21,14 @@ namespace DiversityPhone.ViewModels.Utility {
 
         private bool _UseGPS;
 
-        public bool UseGPS {
-            get {
+        public bool UseGPS
+        {
+            get
+            {
                 return _UseGPS;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.UseGPS, ref _UseGPS, value);
             }
         }
@@ -43,23 +49,29 @@ namespace DiversityPhone.ViewModels.Utility {
 
         private AppSettings _Model;
 
-        public AppSettings Model {
-            get {
+        public AppSettings Model
+        {
+            get
+            {
                 return _Model;
             }
-            private set {
+            private set
+            {
                 this.RaiseAndSetIfChanged(x => x.Model, ref _Model, value);
             }
         }
 
         public SettingsVM(
+            PageVMServices Services,
             ISettingsService Settings,
             ICleanupData Cleanup,
             IConnectivityService Connectivity
-            ) {
+            )
+        {
             this.Cleanup = Cleanup;
             this.Settings = Settings;
             this.Connectivity = Connectivity;
+            this.Services = Services;
 
             this.WhenAny(x => x.Model, x => x.Value)
                 .Where(x => x != null)
@@ -75,7 +87,7 @@ namespace DiversityPhone.ViewModels.Utility {
                     (gps, model) => (model.Value != null) ? model.Value.UseGPS != gps.Value : false);
 
             Save = new ReactiveCommand(setting_changed);
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 Save
                 .Do(_ => saveModel())
                 .Select(_ => Page.Previous)
@@ -83,8 +95,9 @@ namespace DiversityPhone.ViewModels.Utility {
 
             RefreshVocabulary = new ReactiveCommand(Connectivity.WifiAvailable());
             RefreshVocabulary
-                .Subscribe(_ => {
-                    Messenger.SendMessage(Page.SetupVocabulary);
+                .Subscribe(_ =>
+                {
+                    Services.Messenger.SendMessage(Page.SetupVocabulary);
                 });
 
 
@@ -92,31 +105,31 @@ namespace DiversityPhone.ViewModels.Utility {
 
 
             ManageTaxa = new ReactiveCommand();
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 ManageTaxa
                 .Select(_ => Page.TaxonManagement)
                 );
 
             UploadData = new ReactiveCommand();
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 UploadData
                 .Select(_ => Page.Upload)
                 );
 
             DownloadData = new ReactiveCommand();
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 DownloadData
                 .Select(_ => Page.Download)
                 );
 
             Info = new ReactiveCommand();
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 Info
                 .Select(_ => Page.Info)
                 );
 
             ImportExport = new ReactiveCommand();
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
                 ImportExport
                 .Select(_ => Page.ImportExport)
                 );
@@ -128,17 +141,20 @@ namespace DiversityPhone.ViewModels.Utility {
 
 
 
-        private void saveModel() {
+        private void saveModel()
+        {
             Model.UseGPS = UseGPS;
             Settings.SaveSettings(Model);
         }
 
 
-        private async Task<Unit> OnReset(object _) {
-            var confirmReset = await Notifications.showDecision(DiversityResources.Settings_ConfirmReset);
-            if (confirmReset) {
+        private async Task<Unit> OnReset(object _)
+        {
+            var confirmReset = await Services.Notifications.showDecision(DiversityResources.Settings_ConfirmReset);
+            if (confirmReset)
+            {
                 await Cleanup.ClearLocalData();
-                Messenger.SendMessage(Page.SetupWelcome);
+                Services.Messenger.SendMessage(Page.SetupWelcome);
             }
 
             return Unit.Default;

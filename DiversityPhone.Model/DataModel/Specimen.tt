@@ -9,18 +9,19 @@ using System.Linq;
 using ReactiveUI;
 using System.Data.Linq.Mapping;
 using System.Data.Linq;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class Specimen : ReactiveObject, IModifyable, IMultimediaOwner
+	public class Specimen : ReactiveObject, IMappedEntity, IMultimediaOwner
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
 		private Binary version;
 #pragma warning restore 0169
 
-<# Row("int", "SpecimenID", RowKind.Key); #>
+<# Row("int?", "SpecimenID", RowKind.Key); #>
 <# Row("int?", "CollectionSpecimenID", RowKind.Nullable); #>   
 <# Row("int", "EventID"); #>
 
@@ -35,36 +36,21 @@ namespace DiversityPhone.Model
         }
 
 
-        public static IQueryOperations<Specimen> Operations
-        {
-            get;
-            private set;
-        }
-
-        static Specimen()
-        {
-            Operations = new QueryOperations<Specimen>(
-                //Smallerthan
-                          (q, spec) => q.Where(row => row.SpecimenID < spec.SpecimenID),
-                //Equals
-                          (q, spec) => q.Where(row => row.SpecimenID == spec.SpecimenID),
-                //Orderby
-                          (q) => q.OrderBy(spec => spec.SpecimenID),
-                //FreeKey
-                          (q, spec) =>
-                          {
-                              spec.SpecimenID = QueryOperations<Specimen>.FindFreeIntKey(q, row => row.SpecimenID);
-                          });
-        }
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.Specimen; }
         }
 
-        public int EntityID
+        public int? EntityID
         {
             get { return SpecimenID; }
+			set { SpecimenID = value; }
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionSpecimenID; }
+			set { CollectionSpecimenID = value; }
         }
     }
 
@@ -74,7 +60,7 @@ namespace DiversityPhone.Model
         public static bool IsObservation(this Specimen spec)
         {
             return spec.AccessionNumber == null
-                && !spec.IsNew();
+                && spec.SpecimenID.HasValue;
         }
 
         public static Specimen MakeObservation(this Specimen spec)

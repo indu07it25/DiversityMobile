@@ -11,18 +11,19 @@ using System.Linq;
 using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class EventProperty : ReactiveObject, IModifyable
+	public class EventProperty : ReactiveObject, IModifyable, IWriteableEntity
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
 		private Binary version;
 #pragma warning restore 0169
 
-<# Row("int", "EventID", RowKind.CompositeKey); #>   
+<# Row("int?", "EventID", RowKind.CompositeKey); #>   
 <# Row("int", "PropertyID", RowKind.CompositeKey); #> 
 
 <# Row("string", "DisplayText"); #>
@@ -30,35 +31,16 @@ namespace DiversityPhone.Model
   
 <# Row("ModificationState", "ModificationState"); #>
   
-		 public EventProperty()
+		public EventProperty()
         {            
             this.ModificationState = ModificationState.New;
         }
 
-
-        public static IQueryOperations<EventProperty> Operations
-        {
-            get;
-            private set;
-        }
-
-        static EventProperty()
-        {
-            Operations = new QueryOperations<EventProperty>(
-                //Smallerthan
-                          (q, cep) => q.Where(row => row.EventID < cep.EventID || row.PropertyID < cep.PropertyID),
-                //Equals
-                          (q, cep) => q.Where(row => row.EventID == cep.EventID && row.PropertyID == cep.PropertyID),
-                //Orderby
-                          (q) => from cep in q
-                                 orderby cep.EventID, cep.PropertyID
-                                 select cep,
-                //FreeKey
-                          (q, cep) =>
-                          {
-                              //Not Applicable
-                          });
-        }
+		public int? EntityID 
+		{
+			get { return EventID; }
+			set { EventID = value; }
+		}
     }
 }
  

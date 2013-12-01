@@ -3,7 +3,7 @@ using ReactiveUI.Xaml;
 
 namespace DiversityPhone.ViewModels
 {
-    public interface ISavePageVM : IReactiveNotifyPropertyChanged
+    public interface ISavePageVM : IReactiveNotifyPropertyChanged, IPageServices
     {
         IReactiveCommand Save { get; }
         IReactiveCommand ToggleEditable { get; }

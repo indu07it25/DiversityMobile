@@ -31,7 +31,7 @@ namespace DiversityPhone.ViewModels.Utility
                 var cancel = cancelSource.Token;
 
                 Items.OnNext(
-                    Storage.getModifiedMMOs()
+                    Storage.GetNewMultimedia()
                     .Where(mmo => Mapping.ResolveToServerKey(mmo.OwnerType, mmo.RelatedId).HasValue)
                     .Select(mmo => MultimediaVMFactory(mmo))
                     .ToObservable(ThreadPool)
@@ -108,7 +108,7 @@ namespace DiversityPhone.ViewModels.Utility
                             file.Read(data, 0, data.Length);
                         }
                         return Service.UploadMultimedia(mmo, data)
-                            .Do(uri => Storage.update(mmo, o => o.CollectionURI = uri))
+                            .Do(uri => Storage.Update(mmo, o => o.CollectionURI = uri))
                             .Select(_ => mmo);
                     }
                     else
@@ -119,7 +119,7 @@ namespace DiversityPhone.ViewModels.Utility
                 .SelectMany(obs =>
                 {
                     var upload = obs.SelectMany(mmo => Service.InsertMultimediaObject(mmo).Select(_ => mmo))
-                        .Do(mmo => Storage.MarkUploaded(mmo))
+                        .Do(mmo => Storage.Update(mmo, x => x.ModificationState = ModificationState.Unmodified))
                         .DisplayProgress(Notifications, DiversityResources.Sync_Info_UploadingMultimedia)
                         .Select(_ => Unit.Default)
                         .Publish();

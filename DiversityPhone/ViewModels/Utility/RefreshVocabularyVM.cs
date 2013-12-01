@@ -1,26 +1,28 @@
 ﻿using DiversityPhone.Interface;
 using DiversityPhone.Model;
-using DiversityPhone.Services;
-using ReactiveUI;
 using System;
 using System.Reactive.Linq;
 
-namespace DiversityPhone.ViewModels {
-    public class RefreshVocabularyVM : PageVMBase {
+namespace DiversityPhone.ViewModels
+{
+    public class RefreshVocabularyVM
+    {
         public RefreshVocabularyVM(
-            ICredentialsService Credentials,
-            Func<IRefreshVocabularyTask> refreshVocabluaryTaskFactory,
-            IMessageBus Messenger
-            ) {
-            this.OnActivation()
-                .SelectMany(_ => Credentials.CurrentCredentials().Where(cred => cred != null).FirstAsync())
-                .TakeUntil(this.OnDeactivation())
-                .Subscribe(login => {
+            OnlineVMServices Services,
+            Func<IRefreshVocabularyTask> refreshVocabluaryTaskFactory
+            )
+        {
+            Services.Activation.OnActivation()
+                .SelectMany(_ => Services.Credentials.CurrentCredentials().Where(cred => cred != null).FirstAsync())
+                .TakeUntil(Services.Activation.OnDeactivation())
+                .Subscribe(login =>
+                {
                     var refreshTask = refreshVocabluaryTaskFactory();
                     refreshTask.Start(login)
-                        .Subscribe(_ => { }, () => {
-                            Messenger.SendMessage<EventMessage>(EventMessage.Default, MessageContracts.INIT);
-                            Messenger.SendMessage<Page>(Page.Home);
+                        .Subscribe(_ => { }, () =>
+                        {
+                            Services.Messenger.SendMessage<EventMessage>(EventMessage.Default, MessageContracts.INIT);
+                            Services.Messenger.SendMessage<Page>(Page.Home);
                         });
                 });
 

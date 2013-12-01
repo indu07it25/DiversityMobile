@@ -1,21 +1,18 @@
-﻿using DiversityPhone.Interface;
-using DiversityPhone.Model;
+﻿using DiversityPhone.Model;
 using ReactiveUI;
 using ReactiveUI.Xaml;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 
 
-namespace DiversityPhone.ViewModels {
-    public class EditAnalysisVM : EditPageVMBase<IdentificationUnitAnalysis> {
-        readonly IVocabularyService Vocabulary;
-        readonly IFieldDataService Storage;
-
+namespace DiversityPhone.ViewModels
+{
+    public class EditAnalysisVM : EditPageVMBase<IdentificationUnitAnalysis>
+    {
         private ObservableAsPropertyHelper<IElementVM<IdentificationUnit>> _Parent;
         public IElementVM<IdentificationUnit> Parent { get { return _Parent.Value; } }
 
@@ -31,19 +28,24 @@ namespace DiversityPhone.ViewModels {
         public bool IsCustomResult { get { return _IsCustomResult.Value; } }
 
         private string _CustomResult;
-        public string CustomResult {
-            get {
+        public string CustomResult
+        {
+            get
+            {
                 return _CustomResult;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.CustomResult, ref _CustomResult, value);
             }
         }
 
         public DateTime _AnalysisDate;
-        public DateTime AnalysisDate {
+        public DateTime AnalysisDate
+        {
             get { return _AnalysisDate; }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.AnalysisDate, value);
             }
         }
@@ -52,24 +54,20 @@ namespace DiversityPhone.ViewModels {
 
 
         public EditAnalysisVM(
-            IFieldDataService Storage,
-            IVocabularyService Vocabulary,
-            [Dispatcher] IScheduler Dispatcher
-            ) {
-            Contract.Requires(Storage != null);
-            Contract.Requires(Vocabulary != null);
-            this.Storage = Storage;
-            this.Vocabulary = Vocabulary;
+            DataVMServices Services
+            )
+            : base(Services)
+        {
 
 
             _Parent = this.ObservableToProperty(
-                Messenger.Listen<IElementVM<IdentificationUnit>>(MessageContracts.VIEW),
+                Services.Messenger.Listen<IElementVM<IdentificationUnit>>(MessageContracts.VIEW),
                 vm => vm.Parent);
 
 
-            _Results = new ListSelectionHelper<AnalysisResult>(Dispatcher);
-            Analyses = new ListSelectionHelper<Analysis>(Dispatcher);
-            Messenger.Listen<IList<Analysis>>()
+            _Results = new ListSelectionHelper<AnalysisResult>(Services.Dispatcher);
+            Analyses = new ListSelectionHelper<Analysis>(Services.Dispatcher);
+            Services.Messenger.Listen<IList<Analysis>>()
                 .Subscribe(Analyses.ItemsObserver);
 
             Analyses.ItemsObservable.Where(items => items != null)
@@ -82,14 +80,15 @@ namespace DiversityPhone.ViewModels {
 
             Analyses.SelectedItemObservable
                 .Where(an => an != null)
-                .SelectMany(selectedAN => {
+                .SelectMany(selectedAN =>
+                {
                     if (selectedAN != NoAnalysis)
-                        return Observable.Start(() => Vocabulary.getPossibleAnalysisResults(selectedAN.AnalysisID) as IList<AnalysisResult>, ThreadPoolScheduler.Instance);
+                        return Observable.Start(() => Services.Vocabulary.getPossibleAnalysisResults(selectedAN.AnalysisID) as IList<AnalysisResult>, ThreadPoolScheduler.Instance);
                     else
                         return Observable.Return(Enumerable.Empty<AnalysisResult>().ToList() as IList<AnalysisResult>);
                 })
                 .Do(list => list.Insert(0, NoResult))
-                .ObserveOn(Dispatcher)
+                .ObserveOn(Services.Dispatcher)
                 .Subscribe(Results.ItemsObserver);
 
 
@@ -121,7 +120,7 @@ namespace DiversityPhone.ViewModels {
                 )
                 .Subscribe(x => CustomResult = x);
 
-            Messenger.RegisterMessageSource(
+            Services.Messenger.RegisterMessageSource(
               Save
               .Select(_ => Analyses.SelectedItem),
               MessageContracts.USE);
@@ -129,7 +128,8 @@ namespace DiversityPhone.ViewModels {
             CanSave().StartWith(false).Subscribe(CanSaveSubject);
         }
 
-        protected IObservable<bool> CanSave() {
+        protected IObservable<bool> CanSave()
+        {
             var vocabularyResultValid = Results.SelectedItemObservable
                 .Select(result => result != NoResult);
 
@@ -142,7 +142,8 @@ namespace DiversityPhone.ViewModels {
             return resultValid;
         }
 
-        protected override void UpdateModel() {
+        protected override void UpdateModel()
+        {
             Current.Model.AnalysisID = Analyses.SelectedItem.AnalysisID;
             Current.Model.AnalysisResult = (IsCustomResult) ? CustomResult : Results.SelectedItem.Result;
         }

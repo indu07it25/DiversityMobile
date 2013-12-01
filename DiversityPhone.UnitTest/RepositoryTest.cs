@@ -1,4 +1,5 @@
-﻿using DiversityPhone.Storage;
+﻿using DiversityPhone.Interface;
+using DiversityPhone.Storage;
 using Microsoft.VisualStudio.TestPlatform.UnitTestFramework;
 using System;
 using System.Data.Linq;
@@ -8,7 +9,7 @@ using System.Linq;
 namespace DiversityPhone.UnitTest
 {
     [Table]
-    internal class TestEntity : IEntity<TestEntity>
+    internal class TestEntity : IWriteableEntity
     {
         [Column(IsPrimaryKey = true, IsDbGenerated = true)]
         public int? ID { get; set; }
@@ -25,10 +26,12 @@ namespace DiversityPhone.UnitTest
         [Column]
         public double Altitude { get; set; }
 
-        public System.Linq.Expressions.Expression<System.Func<TestEntity, bool>> IDEqualsExpression()
+        public int? EntityID
         {
-            return x => x.ID == ID;
+            get { return ID; }
+            set { ID = value; }
         }
+
 
         public TestEntity()
         {
@@ -37,26 +40,71 @@ namespace DiversityPhone.UnitTest
         }
     }
 
-    internal class FieldDataContext : DataContext
+    [Table]
+    internal class TestChild : IWriteableEntity
     {
-        public FieldDataContext()
+        [Column(IsPrimaryKey = true, IsDbGenerated = true)]
+        public int? ID { get; set; }
+
+        [Column]
+        public int? OwnerID { get; set; }
+
+        [Column]
+        public int? RelID { get; set; }
+
+        public int? EntityID
+        {
+            get { return ID; }
+            set { ID = value; }
+        }
+    }
+    internal class TestDataContext : DataContext
+    {
+        public TestDataContext()
             : base("isostore:/test.sdf")
         {
 
         }
 #pragma warning disable 0649
         public Table<TestEntity> Entities;
+        public Table<TestChild> Children;
 #pragma warning restore 0649
+    }
+
+    internal class TestRepository : Repository
+    {
+        public TestRepository()
+            : base(() => new TestDataContext(), new TestDeletePolicy())
+        {
+
+        }
+    }
+
+    internal class TestDeletePolicy : IDeletePolicy
+    {
+        public void Enforce<T>(IDeleteOperation operation, T deletee) where T : class, IReadOnlyEntity
+        {
+            if (typeof(T) == typeof(TestEntity))
+            {
+                var ent = deletee as TestEntity;
+                operation.Delete<TestChild>(x => x.OwnerID == ent.ID);
+            }
+            else if (typeof(T) == typeof(TestEntity))
+            {
+                var ch = deletee as TestChild;
+                operation.Delete<TestChild>(x => x.RelID == ch.ID);
+            }
+        }
     }
 
     [TestClass]
     public class RepositoryTest
     {
-        private FieldDataRepository Target;
+        private Repository Target;
 
         public RepositoryTest()
         {
-            Target = new FieldDataRepository(() => new FieldDataContext());
+            Target = new TestRepository();
             Target.ClearDatabase();
         }
 
@@ -97,7 +145,7 @@ namespace DiversityPhone.UnitTest
 
             Target.Add(ent);
 
-            Target.Delete(ent);
+            Target.Delete<TestEntity>(x => x.ID == ent.ID);
 
             var res = Target.Get<TestEntity>(x => x.ID == ent.ID);
 
@@ -107,18 +155,49 @@ namespace DiversityPhone.UnitTest
         [TestMethod]
         public void UpdateUpdates()
         {
-            var ent = new TestEntity() { Altitude = 1.0, Name = "Update", Search = 100, Timestamp = DateTime.Now };
-            var exp = new TestEntity() { Search = 1000 };
+            var exp = new TestEntity() { Altitude = 1.0, Name = "Update", Search = 100, Timestamp = DateTime.Now };
 
-            Target.Add(ent);
+            Target.Add(exp);
 
-            exp.ID = ent.ID;
+            Target.Update(exp, e => e.Search = 1000);
 
-            Target.Update(exp);
-
-            var inStore = Target.Single<TestEntity>(exp.IDEqualsExpression());
+            var inStore = Target.Single<TestEntity>(x => x.ID == exp.ID);
 
             Assert.AreEqual(exp.Search, inStore.Search);
+        }
+
+        [TestMethod]
+        public void DeletePolicyWorks()
+        {
+            var entities = new[] {
+                new TestEntity() { Search = 1000 },
+                new TestEntity() { Search = 1000 },
+                new TestEntity() { Search = 1000 }
+            };
+
+            foreach (var ent in entities)
+            {
+                Target.Add(ent);
+            }
+
+            var children = new[] {
+                new TestChild() { OwnerID = entities[0].ID },
+                new TestChild() { OwnerID = entities[0].ID },
+                new TestChild() { OwnerID = entities[1].ID }
+            };
+
+            foreach (var ent in children)
+            {
+                Target.Add(ent);
+            }
+
+
+            Target.Delete<TestEntity>(x => x.ID == entities[0].ID);
+
+            var childrenLeft = Target.GetAll<TestChild>();
+
+            Assert.IsFalse(childrenLeft.Any(x => x.OwnerID == entities[0].ID));
+            Assert.IsTrue(childrenLeft.Any(x => x.OwnerID == entities[1].ID));
         }
     }
 }

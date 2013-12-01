@@ -1,5 +1,6 @@
 ﻿
-namespace DiversityPhone.ViewModels {
+namespace DiversityPhone.ViewModels
+{
     using DiversityPhone.Interface;
     using DiversityPhone.Model;
     using System;
@@ -9,7 +10,8 @@ namespace DiversityPhone.ViewModels {
     using System.Reactive.Concurrency;
     using System.Reactive.Linq;
 
-    public class EventHierarchyLoader {
+    public class EventHierarchyLoader
+    {
         readonly IDiversityServiceClient Service;
         readonly IFieldDataService Storage;
         readonly IKeyMappingService Mappings;
@@ -20,14 +22,16 @@ namespace DiversityPhone.ViewModels {
             IFieldDataService Storage,
             IKeyMappingService Mappings,
             [ThreadPool] IScheduler ThreadPool
-            ) {
+            )
+        {
             this.Service = Service;
             this.Storage = Storage;
             this.Mappings = Mappings;
             this.ThreadPool = ThreadPool;
         }
 
-        public IObservable<Unit> downloadAndStoreDependencies(Event ev) {
+        public IObservable<Unit> downloadAndStoreDependencies(Event ev)
+        {
             if (ev == null)
                 throw new ArgumentNullException();
 
@@ -55,26 +59,32 @@ namespace DiversityPhone.ViewModels {
         }
 
 
-        public IObservable<EventSeries> getOrDownloadSeries(int? collectionSeriesID) {
+        public IObservable<EventSeries> getOrDownloadSeries(int? collectionSeriesID)
+        {
             var localKey = (collectionSeriesID.HasValue) ? Mappings.ResolveToLocalKey(DBObjectType.EventSeries, collectionSeriesID.Value) : null;
-            if (localKey.HasValue) {
-                return Observable.Return(Storage.get<EventSeries>(localKey));
+            if (localKey.HasValue)
+            {
+                return Observable.Return(Storage.Single<EventSeries>(x => x.SeriesID == localKey));
             }
-            else if (!collectionSeriesID.HasValue) {
+            else if (!collectionSeriesID.HasValue)
+            {
                 return Observable.Return(NoEventSeriesMixin.NoEventSeries);
             }
-            else {
+            else
+            {
                 var series_future = Service.GetEventSeriesByID(collectionSeriesID.Value);
                 var locs_future = Service.GetEventSeriesLocalizations(collectionSeriesID.Value);
 
                 var insertion_future =
                     series_future
-                        .Do(Storage.add)
+                        .Do(Storage.Add)
                         .Zip(locs_future,
-                            (es, locs) => {
-                                foreach (var loc in locs) {
-                                    loc.RelatedID = es.SeriesID;
-                                    Storage.add(loc);
+                            (es, locs) =>
+                            {
+                                foreach (var loc in locs)
+                                {
+                                    loc.RelatedID = es.SeriesID.Value;
+                                    Storage.Add(loc);
                                 }
                                 return es;
                             }).Replay()
@@ -84,12 +94,14 @@ namespace DiversityPhone.ViewModels {
             }
         }
 
-        public IObservable<Event> addEvent(IObservable<EventSeries> series_future, Event ev) {
+        public IObservable<Event> addEvent(IObservable<EventSeries> series_future, Event ev)
+        {
             var insertion_future =
                 series_future
-                .Select(es => {
+                .Select(es =>
+                {
                     ev.SeriesID = es.SeriesID;
-                    Storage.add(ev);
+                    Storage.Add(ev);
                     return ev;
                 }).Replay()
                 .RefCount();
@@ -97,14 +109,17 @@ namespace DiversityPhone.ViewModels {
             return insertion_future;
         }
 
-        public IObservable<Unit> downloadProperties(IObservable<Event> event_future) {
+        public IObservable<Unit> downloadProperties(IObservable<Event> event_future)
+        {
             var insertion_future =
             event_future
                 .SelectMany(ev => Service.GetEventProperties(ev.CollectionEventID.Value)
-                    .Do(props => {
-                        foreach (var prop in props) {
+                    .Do(props =>
+                    {
+                        foreach (var prop in props)
+                        {
                             prop.EventID = ev.EventID;
-                            Storage.add(prop);
+                            Storage.Add(prop);
                         }
                     })
                 )
@@ -115,16 +130,18 @@ namespace DiversityPhone.ViewModels {
             return insertion_future;
         }
 
-        public IObservable<Specimen> downloadSpecimen(IObservable<Event> event_future) {
+        public IObservable<Specimen> downloadSpecimen(IObservable<Event> event_future)
+        {
             var insertion_future =
                 event_future
                 .SelectMany(ev => Service.GetSpecimenForEvent(ev.CollectionEventID.Value)
                     .SelectMany(specimen => specimen.ToObservable(ThreadPool))
                 )
                 .CombineLatest(event_future,
-                    (spec, ev) => {
-                        spec.EventID = ev.EventID;
-                        Storage.add(spec);
+                    (spec, ev) =>
+                    {
+                        spec.EventID = ev.EventID.Value;
+                        Storage.Add(spec);
                         return spec;
                     }).Replay()
                     .RefCount();
@@ -132,15 +149,18 @@ namespace DiversityPhone.ViewModels {
             return insertion_future;
         }
 
-        public IEnumerable<IdentificationUnit> insertUnitsHierarchical(ILookup<int?, IdentificationUnit> tree) {
+        public IEnumerable<IdentificationUnit> insertUnitsHierarchical(ILookup<int?, IdentificationUnit> tree)
+        {
             Queue<IdentificationUnit> todo = new Queue<IdentificationUnit>(tree[null]);
 
-            while (todo.Count > 0) {
+            while (todo.Count > 0)
+            {
                 var iu = todo.Dequeue();
 
-                Storage.add(iu);
+                Storage.Add(iu);
 
-                foreach (var subu in tree[iu.CollectionUnitID]) {
+                foreach (var subu in tree[iu.CollectionUnitID])
+                {
                     subu.RelatedUnitID = iu.UnitID;
                     todo.Enqueue(subu);
                 }
@@ -149,14 +169,17 @@ namespace DiversityPhone.ViewModels {
             }
         }
 
-        public IObservable<IdentificationUnit> downloadUnits(IObservable<Specimen> specimen_future) {
+        public IObservable<IdentificationUnit> downloadUnits(IObservable<Specimen> specimen_future)
+        {
             var insertion_future =
                 specimen_future
                 .SelectMany(spec => Service.GetIdentificationUnitsForSpecimen(spec.CollectionSpecimenID.Value)
-                    .Select(ius => {
+                    .Select(ius =>
+                    {
                         var unitList = ius.ToList();
-                        foreach (var iu in unitList) {
-                            iu.SpecimenID = spec.SpecimenID;
+                        foreach (var iu in unitList)
+                        {
+                            iu.SpecimenID = spec.SpecimenID.Value;
                         }
 
                         return unitList;
@@ -169,13 +192,15 @@ namespace DiversityPhone.ViewModels {
             return insertion_future;
         }
 
-        public IObservable<Unit> downloadAnalyses(IObservable<IdentificationUnit> unit_future) {
+        public IObservable<Unit> downloadAnalyses(IObservable<IdentificationUnit> unit_future)
+        {
             var insertion_future =
                 unit_future
                     .SelectMany(iu => Service.GetAnalysesForIU(iu.CollectionUnitID.Value).SelectMany(ans => ans)
-                        .Do(an => {
-                            an.UnitID = iu.UnitID;
-                            Storage.add(an);
+                        .Do(an =>
+                        {
+                            an.UnitID = iu.UnitID.Value;
+                            Storage.Add(an);
                         })
                     )
                     .Select(_ => Unit.Default)

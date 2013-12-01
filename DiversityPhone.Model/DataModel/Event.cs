@@ -1,15 +1,16 @@
 ﻿
 
-using ReactiveUI;
+using DiversityPhone.Interface;
 using System;
+using System.Linq;
+using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
-using System.Linq;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class Event : ReactiveObject, ILocalizable, IModifyable, IMultimediaOwner
+	public class Event : ReactiveObject, ILocalizable, IMappedEntity, IMultimediaOwner, IModifyable
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -17,10 +18,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _EventID;
+		private int? _EventID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int EventID
+		public int? EventID
 		{
 			get { return _EventID; }
 			set 
@@ -39,7 +39,6 @@ namespace DiversityPhone.Model
 		
 		private int? _CollectionEventID;
 		[Column(CanBeNull=true)]
-		
 		public int? CollectionEventID
 		{
 			get { return _CollectionEventID; }
@@ -59,7 +58,6 @@ namespace DiversityPhone.Model
 		
 		private int? _SeriesID;
 		[Column(CanBeNull=true)]
-		
 		public int? SeriesID
 		{
 			get { return _SeriesID; }
@@ -79,7 +77,6 @@ namespace DiversityPhone.Model
 		
 		private DateTime _CollectionDate;
 		[Column(UpdateCheck=UpdateCheck.Never)]
-		
 		public DateTime CollectionDate
 		{
 			get { return _CollectionDate; }
@@ -106,7 +103,6 @@ namespace DiversityPhone.Model
 		
 		private string _LocalityDescription;
 		[Column]
-		
 		public string LocalityDescription
 		{
 			get { return _LocalityDescription; }
@@ -125,7 +121,6 @@ namespace DiversityPhone.Model
 				
 		private string _HabitatDescription;
 		[Column]
-		
 		public string HabitatDescription
 		{
 			get { return _HabitatDescription; }
@@ -144,7 +139,6 @@ namespace DiversityPhone.Model
 				
 		private double? _Altitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Altitude
 		{
 			get { return _Altitude; }
@@ -164,7 +158,6 @@ namespace DiversityPhone.Model
 		
 		private double? _Latitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Latitude
 		{
 			get { return _Latitude; }
@@ -184,7 +177,6 @@ namespace DiversityPhone.Model
 		
 		private double? _Longitude;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public double? Longitude
 		{
 			get { return _Longitude; }
@@ -204,7 +196,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -228,42 +219,27 @@ namespace DiversityPhone.Model
             this.ModificationState = ModificationState.New;
 		}
 
- 		public new Event MemberwiseClone()
+ 		new public Event MemberwiseClone()
         {
             return (Event)base.MemberwiseClone();
         }
 		       
-        public static IQueryOperations<Event> Operations
-        {
-            get;
-            private set;
-        }
-
-        static Event()
-        {
-            Operations = new QueryOperations<Event>(
-                //Smallerthan
-                          (q, ev) => q.Where(row => row.EventID < ev.EventID),
-                //Equals
-                          (q, ev) => q.Where(row => row.EventID == ev.EventID),
-                //Orderby
-                          (q) => q.OrderBy(ev => ev.EventID),
-                //FreeKey
-                          (q, ev) =>
-                          {
-                              ev.EventID = QueryOperations<Event>.FindFreeIntKey(q, row => row.EventID);
-                          });
-        }       
-
         public DBObjectType EntityType
         {
             get { return DBObjectType.Event; }
         }
 
 
-        public int EntityID
+        public int? EntityID
         {
             get { return EventID; }
+			set { EventID = value;}
+        }
+
+		public int? MappedID
+        {
+            get { return CollectionEventID; }
+			set { CollectionEventID = value;}
         }
     }	
 }

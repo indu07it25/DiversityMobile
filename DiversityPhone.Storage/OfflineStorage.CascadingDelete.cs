@@ -1,14 +1,10 @@
 ﻿using DiversityPhone.Interface;
 using DiversityPhone.Model;
-using System;
-using System.Linq;
-using System.Reactive;
-using System.Reactive.Linq;
 
 namespace DiversityPhone.Services
 {
 
-    public class CascadingDeleter
+    public class CascadingDeleter : IDeletePolicy
     {
         readonly IStoreMultimedia MultimediaStore;
 
@@ -17,149 +13,60 @@ namespace DiversityPhone.Services
             MultimediaStore = Multimedia;
         }
 
-        private T attachedRowFrom<T>(DiversityDataContext ctx, IQueryOperations<T> operations, T detachedRow) where T : class
+        public void Enforce<T>(IDeleteOperation operation, T deletee) where T : class, IReadOnlyEntity
         {
-            return operations.WhereKeyEquals(ctx.GetTable<T>(), detachedRow)
-                .FirstOrDefault();
+            if (typeof(T) == typeof(EventSeries))
+            {
+                deleteSeries(operation, deletee as EventSeries);
+            }
+            else if (typeof(T) == typeof(Event))
+            {
+                deleteEvent(operation, deletee as Event);
+            }
+            else if (typeof(T) == typeof(Specimen))
+            {
+                deleteSpecimen(operation, deletee as Specimen);
+            }
+            else if (typeof(T) == typeof(IdentificationUnit))
+            {
+                deleteUnit(operation, deletee as IdentificationUnit);
+            }
+            else if (typeof(T) == typeof(MultimediaObject))
+            {
+                deleteMMO(operation, deletee as MultimediaObject);
+            }
+
+            //Nothing more to do for this type
         }
 
-        public IObservable<Unit> deleteCascadingAsync<T>(ICurrentProfile Profile, T detachedRow) where T : class
+        private void deleteSeries(IDeleteOperation operation, EventSeries es)
         {
-            return Observable.Start(() =>
-                {
-                    using (var ctx = new DiversityDataContext(Profile))
-                    {
-                        if (typeof(T) == typeof(EventSeries))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, EventSeries.Operations, detachedRow as EventSeries);
-                            if (attachedRow != null)
-                                deleteSeries(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(GeoPointForSeries))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, GeoPointForSeries.Operations, detachedRow as GeoPointForSeries);
-                            if (attachedRow != null)
-                                deleteGeoPoint(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(Event))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, Event.Operations, detachedRow as Event);
-                            if (attachedRow != null)
-                                deleteEvent(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(EventProperty))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, EventProperty.Operations, detachedRow as EventProperty);
-                            if (attachedRow != null)
-                                deleteProperty(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(Specimen))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, Specimen.Operations, detachedRow as Specimen);
-                            if (attachedRow != null)
-                                deleteSpecimen(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(IdentificationUnit))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, IdentificationUnit.Operations, detachedRow as IdentificationUnit);
-                            if (attachedRow != null)
-                                deleteUnit(ctx, attachedRow, true);
-                        }
-                        else if (typeof(T) == typeof(IdentificationUnitAnalysis))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, IdentificationUnitAnalysis.Operations, detachedRow as IdentificationUnitAnalysis);
-                            if (attachedRow != null)
-                                deleteAnalysis(ctx, attachedRow);
-                        }
-                        else if (typeof(T) == typeof(MultimediaObject))
-                        {
-                            var attachedRow = attachedRowFrom(ctx, MultimediaObject.Operations, detachedRow as MultimediaObject);
-                            if (attachedRow != null)
-                                deleteMMO(ctx, attachedRow);
-                        }
-                        else
-                            throw new ArgumentException("Unsupported Type T");
-
-
-                        ctx.SubmitChanges();
-                    }
-                });
-
+            operation.Delete(es.Events());
+            operation.Delete(es.Localizations());
         }
 
-        private void deleteSeries(DiversityDataContext ctx, EventSeries es)
+        private void deleteEvent(IDeleteOperation operation, Event ev)
         {
-            foreach (var ev in Queries.Events(es, ctx))
-                deleteEvent(ctx, ev);
-
-            foreach (var gp in Queries.GeoPoints(es, ctx))
-                deleteGeoPoint(ctx, gp);
-
-            ctx.EventSeries.DeleteOnSubmit(es);
+            operation.Delete<Specimen>(Queries.Specimen(ev));
+            operation.Delete<EventProperty>(Queries.Properties(ev));
+            operation.Delete<MultimediaObject>(Queries.Multimedia(ev));
         }
 
-        private void deleteGeoPoint(DiversityDataContext ctx, GeoPointForSeries p)
+        private void deleteSpecimen(IDeleteOperation operation, Specimen spec)
         {
-            ctx.GeoTour.DeleteOnSubmit(p);
+            operation.Delete(Queries.Units(spec));
+            operation.Delete(Queries.Multimedia(spec));
         }
 
-        private void deleteEvent(DiversityDataContext ctx, Event ev)
+        private void deleteUnit(IDeleteOperation operation, IdentificationUnit iu)
         {
-            foreach (var s in Queries.Specimen(ev, ctx))
-                deleteSpecimen(ctx, s);
-
-            foreach (var p in Queries.Properties(ev, ctx))
-                deleteProperty(ctx, p);
-
-            foreach (var mmo in Queries.Multimedia(ev, ctx))
-                deleteMMO(ctx, mmo);
-
-            ctx.Events.DeleteOnSubmit(ev);
+            operation.Delete(Queries.Analyses(iu));
+            operation.Delete(Queries.Multimedia(iu));
         }
 
-        private void deleteSpecimen(DiversityDataContext ctx, Specimen spec)
+        private void deleteMMO(IDeleteOperation operation, MultimediaObject mmo)
         {
-            foreach (var iu in Queries.Units(spec, ctx))
-                deleteUnit(ctx, iu, false);
-
-            foreach (var mmo in Queries.Multimedia(spec, ctx))
-                deleteMMO(ctx, mmo);
-
-            ctx.Specimen.DeleteOnSubmit(spec);
-        }
-
-        private void deleteUnit(DiversityDataContext ctx, IdentificationUnit iu, bool cascade = false)
-        {
-            foreach (var an in Queries.Analyses(iu, ctx))
-                deleteAnalysis(ctx, an);
-
-            foreach (var mmo in Queries.Multimedia(iu, ctx))
-                deleteMMO(ctx, mmo);
-
-            if (cascade)
-                foreach (var siu in Queries.SubUnits(iu, ctx))
-                    deleteUnit(ctx, siu, cascade);
-
-            ctx.IdentificationUnits.DeleteOnSubmit(iu);
-
-
-        }
-
-        private void deleteAnalysis(DiversityDataContext ctx, IdentificationUnitAnalysis an)
-        {
-            ctx.IdentificationUnitAnalyses.DeleteOnSubmit(an);
-        }
-
-        private void deleteProperty(DiversityDataContext ctx, EventProperty p)
-        {
-            ctx.EventProperties.DeleteOnSubmit(p);
-        }
-
-        private void deleteMMO(DiversityDataContext ctx, MultimediaObject mmo)
-        {            
             MultimediaStore.DeleteMultimedia(mmo.Uri);
-            ctx.MultimediaObjects.DeleteOnSubmit(mmo);
         }
-
     }
 }

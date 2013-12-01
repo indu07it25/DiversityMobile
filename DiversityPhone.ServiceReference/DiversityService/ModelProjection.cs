@@ -51,7 +51,6 @@
                 Altitude = l.Altitude,
                 Latitude = l.Latitude,
                 Longitude = l.Longitude,
-                ModificationState = ModificationState.Unmodified,
             };
         }
 
@@ -177,7 +176,7 @@
                 WorkingName = iu.LastIdentificationCache,
                 ModificationState = ModificationState.Unmodified,
             };
-                
+
         }
 
         public static Svc.IdentificationUnitAnalysis ToServiceObject(this IdentificationUnitAnalysis iua)

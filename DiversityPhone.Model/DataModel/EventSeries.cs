@@ -1,16 +1,19 @@
 ﻿
 
 
-using ReactiveUI;
 using System;
-using System.Data.Linq;
-using System.Data.Linq.Mapping;
 using System.Linq;
+using ReactiveUI;
+using Microsoft.Phone.Data.Linq.Mapping;
+using System.Data.Linq; 
+using System.Data.Linq.Mapping;
+using DiversityPhone;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class EventSeries : ReactiveObject, IModifyable, ILocationOwner
+	public class EventSeries : ReactiveObject, IMappedEntity, ILocationOwner, IModifyable
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
@@ -18,10 +21,9 @@ namespace DiversityPhone.Model
 #pragma warning restore 0169
 
 		
-		private int _SeriesID;
+		private int? _SeriesID;
 		[Column(IsPrimaryKey=true,IsDbGenerated=true)]
-		[EntityKey]
-		public int SeriesID
+		public int? SeriesID
 		{
 			get { return _SeriesID; }
 			set 
@@ -39,7 +41,6 @@ namespace DiversityPhone.Model
 				
 		private int? _CollectionSeriesID;
 		[Column(CanBeNull=true)]
-		
 		public int? CollectionSeriesID
 		{
 			get { return _CollectionSeriesID; }
@@ -60,7 +61,6 @@ namespace DiversityPhone.Model
 		
 		private DateTime _SeriesStart;
 		[Column]
-		
 		public DateTime SeriesStart
 		{
 			get { return _SeriesStart; }
@@ -87,7 +87,6 @@ namespace DiversityPhone.Model
 		
 		private DateTime? _SeriesEnd;
 		[Column(CanBeNull=true,UpdateCheck=UpdateCheck.Never)]
-		
 		public DateTime? SeriesEnd
 		{
 			get { return _SeriesEnd; }
@@ -107,7 +106,6 @@ namespace DiversityPhone.Model
 		
 		private string _Description;
 		[Column]
-		
 		public string Description
 		{
 			get { return _Description; }
@@ -126,7 +124,6 @@ namespace DiversityPhone.Model
 				
 		private string _SeriesCode;
 		[Column]
-		
 		public string SeriesCode
 		{
 			get { return _SeriesCode; }
@@ -147,7 +144,6 @@ namespace DiversityPhone.Model
 		
 		private ModificationState _ModificationState;
 		[Column]
-		
 		public ModificationState ModificationState
 		{
 			get { return _ModificationState; }
@@ -175,41 +171,22 @@ namespace DiversityPhone.Model
             this.ModificationState = ModificationState.New;            
         }
 
-
-        
-
-        public static IQueryOperations<EventSeries> Operations
-        {
-            get;
-            private set;
-        }
-
-        static EventSeries()
-        {
-            Operations = new QueryOperations<EventSeries>(
-                //Smallerthan
-                          (q, es) => q.Where(row => row.SeriesID < es.SeriesID),
-                //Equals
-                          (q, es) => q.Where(row => row.SeriesID == es.SeriesID),
-                //Orderby
-                          (q) => q.OrderBy(es => -es.SeriesID),//As EventSeries have negative Values Unlike the other entities in DiversityCollection we need to order by the nagtive value to get the same behaviour
-                //FreeKey
-                          (q, es) =>
-                          {
-                              es.SeriesID = QueryOperations<EventSeries>.FindFreeIntKeyUp(q, row => row.SeriesID);//CollectionEventSeries Autoinc-key is lowered by one by default in DiversityCollection. As we need to avoid Synchronisationconflicts we need to count in the other direction.
-                          });
-
-            
-        }      
-
 		public DBObjectType EntityType
         {
             get { return DBObjectType.EventSeries; }
         }
 
-        public int EntityID
+        public int? EntityID
         {
             get { return SeriesID; }
+			set { SeriesID = value; }
         }
+
+		public int? MappedID
+        {
+            get { return CollectionSeriesID; }
+			set { CollectionSeriesID = value; }
+        }
+
     }	
 } 

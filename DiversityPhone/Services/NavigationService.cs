@@ -1,4 +1,5 @@
-﻿using DiversityPhone.Model;
+﻿using DiversityPhone.Interface;
+using DiversityPhone.Model;
 using DiversityPhone.ViewModels;
 using Microsoft.Phone.Controls;
 using ReactiveUI;
@@ -7,20 +8,25 @@ using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 
 
-namespace DiversityPhone.Services {
-    public class NavigationService {
+namespace DiversityPhone.Services
+{
+    public class NavigationService
+    {
         readonly IMessageBus Messenger;
         readonly PhoneApplicationFrame _frame;
 
-        private PageVMBase _CurrentVM;
-        public PageVMBase CurrentVM {
+        private IPageServices _CurrentVM;
+        public IPageServices CurrentVM
+        {
             get { return _CurrentVM; }
-            set {
-                if (value != null && _CurrentVM != value) {
+            set
+            {
+                if (value != null && _CurrentVM != value)
+                {
                     if (_CurrentVM != null)
-                        _CurrentVM.Deactivate();
+                        _CurrentVM.Services.Activation.Deactivate();
                     _CurrentVM = value;
-                    _CurrentVM.Activate();
+                    _CurrentVM.Services.Activation.Activate();
                 }
 
             }
@@ -31,7 +37,8 @@ namespace DiversityPhone.Services {
             IMessageBus messenger,
             PhoneApplicationFrame RootFrame,
             [Dispatcher] IScheduler Dispatcher
-            ) {
+            )
+        {
             Messenger = messenger;
             _frame = RootFrame;
 
@@ -66,15 +73,18 @@ namespace DiversityPhone.Services {
                .Subscribe(NavigateToPage);
         }
 
-        void NavigationFinished() {
+        void NavigationFinished()
+        {
             var page = _frame.Content as PhoneApplicationPage;
             if (page != null)
-                CurrentVM = page.DataContext as PageVMBase;
+                CurrentVM = page.DataContext as IPageServices;
         }
 
-        private void NavigateToPage(Page p) {
+        private void NavigateToPage(Page p)
+        {
             string destination = null;
-            switch (p) {
+            switch (p)
+            {
                 case Page.Current:
                     return;
                 case Page.Previous:
@@ -172,15 +182,18 @@ namespace DiversityPhone.Services {
 #endif
             }
 
-            if (destination != null && _frame != null) {
+            if (destination != null && _frame != null)
+            {
                 var destURI = new Uri(destination, UriKind.RelativeOrAbsolute);
-                if (destURI != _frame.CurrentSource) {
+                if (destURI != _frame.CurrentSource)
+                {
                     _frame.Dispatcher.BeginInvoke(() => _frame.Navigate(destURI));
                 }
             }
         }
 
-        public void NavigateBack() {
+        public void NavigateBack()
+        {
             if (_frame.CanGoBack)
                 _frame.GoBack();
         }

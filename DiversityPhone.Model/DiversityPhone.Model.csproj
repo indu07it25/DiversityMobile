@@ -132,8 +132,7 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="DataModel\GeoPointForSeries.cs" />
-    <Compile Include="IChildEntity.cs" />
+    <Compile Include="DataModel\IEntity.cs" />
     <Compile Include="DataModel\IdentificationUnit.cs">
       <DependentUpon>IdentificationUnit.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -145,10 +144,8 @@
       <DesignTime>True</DesignTime>
     </Compile>
     <Compile Include="Icon.cs" />
-    <Compile Include="IEntity.cs" />
     <Compile Include="ILocalizable.cs" />
     <Compile Include="IModifyable.cs" />
-    <Compile Include="IQueryOperations.cs" />
     <Compile Include="DataModel\Localization.cs">
       <DependentUpon>Localization.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -169,7 +166,6 @@
     <Compile Include="DataModel\Property.cs" />
     <Compile Include="DataModel\PropertyName.cs" />
     <Compile Include="DataModel\Qualification.cs" />
-    <Compile Include="DataModel\QueryOperations.cs" />
     <Compile Include="DataModel\Specimen.cs">
       <DependentUpon>Specimen.tt</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -229,6 +225,11 @@
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\Silverlight for Phone\$(TargetFrameworkVersion)\Microsoft.Silverlight.CSharp.targets" />
   <ProjectExtensions />
   <Import Project="$(SolutionDir)\.nuget\nuget.targets" />
+  <Import Project="..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets" Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" />
+  <Target Name="EnsureBclBuildImported" BeforeTargets="BeforeBuild" Condition="'$(BclBuildImported)' == ''">
+    <Error Condition="!Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" Text="This project references NuGet package(s) that are missing on this computer. Enable NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=317567." HelpKeyword="BCLBUILD2001" />
+    <Error Condition="Exists('..\packages\Microsoft.Bcl.Build.1.0.13\tools\Microsoft.Bcl.Build.targets')" Text="The build restored NuGet packages. Build the project again to include these packages in the build. For more information, see http://go.microsoft.com/fwlink/?LinkID=317568." HelpKeyword="BCLBUILD2002" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

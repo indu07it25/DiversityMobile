@@ -2,7 +2,7 @@
 
 namespace DiversityPhone.ViewModels
 {
-    public interface IDeletePageVM
+    public interface IDeletePageVM : IPageServices
     {
         IReactiveCommand Delete { get; }
     }

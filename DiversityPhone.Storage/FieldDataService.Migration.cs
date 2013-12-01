@@ -1,4 +1,5 @@
-﻿using Microsoft.Phone.Data.Linq;
+﻿using DiversityPhone.Storage;
+using Microsoft.Phone.Data.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO.IsolatedStorage;
@@ -6,7 +7,7 @@ using System.Linq;
 
 namespace DiversityPhone.Services
 {
-    public partial class FieldDataService
+    public partial class FieldDataService : Repository
     {
         private const int CURRENT_SCHEMA_VERSION = 0;
 
@@ -39,7 +40,7 @@ namespace DiversityPhone.Services
         public void CheckAndRepairDatabase()
         {
             bool MoveAndRecreateDB = false;
-            withDataContext(ctx =>
+            using (var ctx = GetContext())
             {
                 if (!ctx.DatabaseExists())
                 {
@@ -64,7 +65,7 @@ namespace DiversityPhone.Services
                         MoveAndRecreateDB = true;
                     }
                 }
-            });
+            }
             if (MoveAndRecreateDB)
             {
                 MoveAndRecreateDatabase();

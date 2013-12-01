@@ -11,18 +11,19 @@ using System.Linq;
 using ReactiveUI;
 using System.Data.Linq;
 using System.Data.Linq.Mapping;
+using DiversityPhone.Interface;
 
 namespace DiversityPhone.Model
 {	
 	[Table]
-	public class IdentificationUnitAnalysis : ReactiveObject, IModifyable
+	public class IdentificationUnitAnalysis : ReactiveObject, IModifyable, IWriteableEntity
 	{
 #pragma warning disable 0169
 		[Column(IsVersion = true)]
 		private Binary version;
 #pragma warning restore 0169
 
-<# Row("int", "IdentificationUnitAnalysisID", RowKind.Key); #>  
+<# Row("int?", "IdentificationUnitAnalysisID", RowKind.Key); #>  
 
 <# Row("int", "UnitID"); #>   
 <# Row("int", "AnalysisID"); #> 
@@ -39,27 +40,11 @@ namespace DiversityPhone.Model
             this.AnalysisDate = DateTime.Now;                      
         }
 
-        public static IQueryOperations<IdentificationUnitAnalysis> Operations
-        {
-            get;
-            private set;
-        }
-
-        static IdentificationUnitAnalysis()
-        {
-            Operations = new QueryOperations<IdentificationUnitAnalysis>(
-                //Smallerthan
-                          (q, iuan) => q.Where(row => row.IdentificationUnitAnalysisID < iuan.IdentificationUnitAnalysisID),
-                //Equals
-                          (q, iuan) => q.Where(row => row.IdentificationUnitAnalysisID == iuan.IdentificationUnitAnalysisID),
-                //Orderby
-                          (q) => q.OrderBy(iuan => iuan.IdentificationUnitAnalysisID),
-                //FreeKey
-                          (q, iuan) =>
-                          {
-                              iuan.IdentificationUnitAnalysisID = QueryOperations<IdentificationUnitAnalysis>.FindFreeIntKey(q, row => row.IdentificationUnitAnalysisID);
-                          });
-        }
+		public int? EntityID
+		{
+			get { return IdentificationUnitAnalysisID; }
+			set { IdentificationUnitAnalysisID = value; }
+		}
     }
 }
  

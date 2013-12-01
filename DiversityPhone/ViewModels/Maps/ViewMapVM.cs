@@ -4,17 +4,16 @@ using DiversityPhone.Services;
 using ReactiveUI;
 using ReactiveUI.Xaml;
 using System;
-using System.Diagnostics.Contracts;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows;
 using System.Windows.Media.Imaging;
 
-namespace DiversityPhone.ViewModels {
-    public class ViewMapVM : PageVMBase, ISavePageVM {
-        readonly IMapStorageService MapStorage;
-        readonly ILocationService Location;
-        readonly IFieldDataService Storage;
+namespace DiversityPhone.ViewModels
+{
+    public class ViewMapVM : ReactiveObject, ISavePageVM
+    {
+        public PageVMServices Services { get; private set; }
 
         public ReactiveCommand SelectMap { get; private set; }
         public IReactiveCommand ToggleEditable { get; private set; }
@@ -32,7 +31,8 @@ namespace DiversityPhone.ViewModels {
         private ObservableAsPropertyHelper<bool> _IsEditable;
 
         private string _MapUri;
-        public string MapUri {
+        public string MapUri
+        {
             get { return _MapUri; }
             set { this.RaiseAndSetIfChanged(x => x.MapUri, ref _MapUri, value); }
         }
@@ -40,54 +40,59 @@ namespace DiversityPhone.ViewModels {
 
 
         private BitmapImage _MapImage;
-        public BitmapImage MapImage {
-            get {
+        public BitmapImage MapImage
+        {
+            get
+            {
                 return _MapImage;
             }
-            set {
+            set
+            {
                 this.RaiseAndSetIfChanged(x => x.MapImage, ref _MapImage, value);
             }
         }
 
 
         private Point? _CurrentLocation = null;
-        public Point? CurrentLocation {
-            get {
+        public Point? CurrentLocation
+        {
+            get
+            {
                 return _CurrentLocation;
             }
-            private set {
+            private set
+            {
                 this.RaiseAndSetIfChanged(x => x.CurrentLocation, ref _CurrentLocation, value);
             }
         }
 
         private Point? _PrimaryLocalization = null;
-        public Point? PrimaryLocalization {
-            get {
+        public Point? PrimaryLocalization
+        {
+            get
+            {
                 return _PrimaryLocalization;
             }
-            private set {
+            private set
+            {
                 this.RaiseAndSetIfChanged(x => x.PrimaryLocalization, ref _PrimaryLocalization, value);
             }
         }
 
         private IObservable<IObservable<Point?>> _AdditionalLocalizations;
-        public IObservable<IObservable<Point?>> AdditionalLocalizations {
-            get {
+        public IObservable<IObservable<Point?>> AdditionalLocalizations
+        {
+            get
+            {
                 return _AdditionalLocalizations;
             }
         }
 
         public ViewMapVM(
-            IMapStorageService MapStorage,
-            ILocationService Location,
-            IFieldDataService Storage
-            ) {
-            Contract.Requires(MapStorage != null);
-            Contract.Requires(Location != null);
-            Contract.Requires(Storage != null);
-            this.MapStorage = MapStorage;
-            this.Location = Location;
-            this.Storage = Storage;
+            MapVMServices Services
+            )
+        {
+            this.Services = Services;
 
             ImageScale = 1.0;
             ImageOffset = new Point();
@@ -95,20 +100,21 @@ namespace DiversityPhone.ViewModels {
             SelectMap = new ReactiveCommand();
             SelectMap
                 .Select(_ => Page.MapManagement)
-                .ToMessage(Messenger);
+                .ToMessage(Services.Messenger);
 
-            this.FirstActivation()
+            Services.Activation.FirstActivation()
                 .Select(_ => Page.MapManagement)
-                .ToMessage(Messenger);
+                .ToMessage(Services.Messenger);
 
 
-            _CurrentMap = this.ObservableToProperty(Messenger.Listen<IElementVM<Map>>(MessageContracts.VIEW), x => x.CurrentMap);
+            _CurrentMap = this.ObservableToProperty(Services.Messenger.Listen<IElementVM<Map>>(MessageContracts.VIEW), x => x.CurrentMap);
             _CurrentMap
                 .Where(vm => vm != null)
-                .Select(vm => Observable.Start(() => MapStorage.loadMap(vm.Model)))
+                .Select(vm => Observable.Start(() => Services.Maps.loadMap(vm.Model)))
                 .Switch()
                 .ObserveOnDispatcher()
-                .Select(stream => {
+                .Select(stream =>
+                {
                     var img = new BitmapImage();
                     img.SetSource(stream);
                     stream.Close();
@@ -116,9 +122,9 @@ namespace DiversityPhone.ViewModels {
                 })
                 .Subscribe(x => MapImage = x);
 
-            var current_series = Messenger.Listen<ILocationOwner>(MessageContracts.VIEW);
+            var current_series = Services.Messenger.Listen<ILocationOwner>(MessageContracts.VIEW);
 
-            var current_localizable = Messenger.Listen<ILocalizable>(MessageContracts.VIEW);
+            var current_localizable = Services.Messenger.Listen<ILocalizable>(MessageContracts.VIEW);
 
             var current_series_if_not_localizable = current_series.Merge(current_localizable.Select(_ => null as ILocationOwner));
 
@@ -133,10 +139,12 @@ namespace DiversityPhone.ViewModels {
 
             var add_locs =
             series_and_map
-                .Select(pair => {
-                    if (pair.Series != null) {
-                        var stream = Storage.getGeoPointsForSeries(pair.Series.EntityID).ToObservable(ThreadPoolScheduler.Instance) //Fetch geopoints asynchronously on Threadpool thread
-                                .Merge(Messenger.Listen<GeoPointForSeries>(MessageContracts.SAVE).Where(gp => gp.SeriesID == pair.Series.EntityID)) //Listen to new Geopoints that are added to the current tour
+                .Select(pair =>
+                {
+                    if (pair.Series != null)
+                    {
+                        var stream = Services.Storage.Get((pair.Series as EventSeries).Localizations()).ToObservable(ThreadPoolScheduler.Instance) //Fetch geopoints asynchronously on Threadpool thread
+                                .Merge(Services.Messenger.Listen<Localization>(MessageContracts.SAVE).Where(gp => gp.RelatedID == pair.Series.EntityID)) //Listen to new Geopoints that are added to the current tour
                                 .Select(gp => pair.Map.PercentilePositionOnMap(gp))
                                 .TakeUntil(series_and_map)
                                 .Replay();
@@ -155,7 +163,8 @@ namespace DiversityPhone.ViewModels {
             Observable.CombineLatest(
                 current_localizable_if_not_series,
                 _CurrentMap,
-                (loc, map) => {
+                (loc, map) =>
+                {
                     if (map == null)
                         return null;
                     return map.Model.PercentilePositionOnMap(loc);
@@ -191,12 +200,12 @@ namespace DiversityPhone.ViewModels {
                     )
                 .Switch()
                 .Do(c => c.SetCoordinates(CurrentMap.Model.GPSFromPercentilePosition(PrimaryLocalization.Value)))
-                .Do(_ => Messenger.SendMessage(Page.Previous))
-                .ToMessage(Messenger, MessageContracts.SAVE);
+                .Do(_ => Services.Messenger.SendMessage(Page.Previous))
+                .ToMessage(Services.Messenger, MessageContracts.SAVE);
 
-            this.OnActivation()
+            Services.Activation.OnActivation()
                 .Where(_ => CurrentMap != null)
-                .SelectMany(_ => Location.Location().StartWith(null as Coordinate).TakeUntil(this.OnDeactivation()))
+                .SelectMany(_ => Services.Location.Location().StartWith(null as Coordinate).TakeUntil(Services.Activation.OnDeactivation()))
                 .Select(c => CurrentMap.Model.PercentilePositionOnMap(c))
                 .Subscribe(c => CurrentLocation = c);
 

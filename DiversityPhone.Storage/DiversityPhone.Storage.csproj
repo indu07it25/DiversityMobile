@@ -92,6 +92,7 @@
   <ItemGroup>
     <Compile Include="BackupService.cs" />
     <Compile Include="DiversityDataContext.cs" />
+    <Compile Include="EntityEditPolicy.cs" />
     <Compile Include="FieldDataService.cs" />
     <Compile Include="FieldDataService.Migration.cs" />
     <Compile Include="FieldDataService.Queries.cs" />

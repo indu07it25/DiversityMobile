@@ -93,29 +93,29 @@ namespace DiversityPhone.ViewModels.Utility
 
         private IObservable<Unit> uploadES(EventSeries es)
         {
-            return Service.InsertEventSeries(es, Storage.getGeoPointsForSeries(es.SeriesID).Select(gp => gp as ILocalizable))
-                    .SelectMany(_ => Storage.getEventsForSeries(es).Select(ev => uploadEV(ev)))
+            return Service.InsertEventSeries(es, Storage.Get(es.Localizations()).Select(gp => gp as ILocalizable))
+                    .SelectMany(_ => Storage.Get(es.Events()).Select(ev => uploadEV(ev)))
                     .SelectMany(obs => obs);
         }
 
         private IObservable<Unit> uploadEV(Event ev)
         {
-            return Service.InsertEvent(ev, Storage.getPropertiesForEvent(ev.EventID))
-                    .SelectMany(_ => Storage.getSpecimenForEvent(ev).Select(s => uploadSpecimen(s)))
+            return Service.InsertEvent(ev, Storage.Get(ev.Properties()))
+                    .SelectMany(_ => Storage.Get(ev.Specimen()).Select(s => uploadSpecimen(s)))
                     .SelectMany(x => x);
         }
 
         private IObservable<Unit> uploadSpecimen(Specimen s)
         {
             return Service.InsertSpecimen(s)
-                .SelectMany(_ => Storage.getTopLevelIUForSpecimen(s.SpecimenID).Select(iu => uploadIU(iu)))
+                .SelectMany(_ => Storage.Get(s.ToplevelUnits()).Select(iu => uploadIU(iu)))
                 .SelectMany(x => x);
         }
 
         private IObservable<Unit> uploadIU(IdentificationUnit iu)
         {
-            return Service.InsertIdentificationUnit(iu, Storage.getIUANForIU(iu))
-                .SelectMany(_ => Storage.getSubUnits(iu).Select(sub => uploadIU(sub)))
+            return Service.InsertIdentificationUnit(iu, Storage.Get(iu.Analyses()))
+                .SelectMany(_ => Storage.Get(iu.SubUnits()).Select(sub => uploadIU(sub)))
                 .SelectMany(x => x);
         }
         private IObservable<Unit> uploadTree(IElementVM vm)
