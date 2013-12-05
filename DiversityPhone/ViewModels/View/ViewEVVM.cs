@@ -41,9 +41,9 @@
             }
         }
 
-        public ReactiveCollection<SpecimenVM> SpecList { get; private set; }
+        public ReactiveCollection<IElementVM<Specimen>> SpecList { get; private set; }
 
-        public ReactiveCollection<PropertyVM> PropertyList { get; private set; }
+        public ReactiveCollection<IElementVM<EventProperty>> PropertyList { get; private set; }
 
         public ElementMultimediaVM MultimediaList { get; private set; }
 
@@ -65,10 +65,10 @@
                 .ToMessage(Services.Messenger, MessageContracts.EDIT);
 
             //Specimen
-            SpecList = getSpecimen.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Specimen()).Select(spec => new SpecimenVM(spec)))
+            SpecList = getSpecimen.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Specimen()).Select(Services.VMFactory.CreateVM))
                 .SelectMany(specs => specs)
                 .CreateCollection();
-            SpecList.ListenToChanges<Specimen, SpecimenVM>(spec => spec.EventID == Current.Model.EventID);
+            SpecList.ListenToChanges<Specimen>(spec => spec.EventID == Current.Model.EventID);
 
             CurrentModelObservable
                 .Do(_ => SpecList.Clear())
@@ -79,10 +79,10 @@
                 .ToMessage(Services.Messenger, MessageContracts.VIEW);
 
             //Properties
-            PropertyList = getProperties.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Properties()).Select(prop => new PropertyVM(prop)))
+            PropertyList = getProperties.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Properties()).Select(Services.VMFactory.CreateVM))
                 .SelectMany(props => props)
                 .CreateCollection();
-            PropertyList.ListenToChanges<EventProperty, PropertyVM>(p => p.EventID == Current.Model.EventID);
+            PropertyList.ListenToChanges<EventProperty>(p => p.EventID == Current.Model.EventID);
 
             CurrentModelObservable
                 .Do(_ => PropertyList.Clear())

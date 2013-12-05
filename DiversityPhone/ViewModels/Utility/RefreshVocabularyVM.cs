@@ -5,13 +5,21 @@ using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-    public class RefreshVocabularyVM
+    public class RefreshVocabularyVM : IPageServices
     {
+        public PageVMServices Services
+        {
+            get;
+            private set;
+        }
+
         public RefreshVocabularyVM(
             OnlineVMServices Services,
             Func<IRefreshVocabularyTask> refreshVocabluaryTaskFactory
             )
         {
+            this.Services = Services;
+
             Services.Activation.OnActivation()
                 .SelectMany(_ => Services.Credentials.CurrentCredentials().Where(cred => cred != null).FirstAsync())
                 .TakeUntil(Services.Activation.OnDeactivation())
@@ -27,6 +35,8 @@ namespace DiversityPhone.ViewModels
                 });
 
         }
+
+
 
     }
 }

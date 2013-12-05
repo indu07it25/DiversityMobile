@@ -6,13 +6,13 @@ using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-   
-    public class IdentificationUnitVM : ElementVMBase<IdentificationUnit>
-    {   
-        public override string Description { get { return Model.WorkingName; } }
-        public override Icon Icon { get { return Icon.IdentificationUnit; } }        
 
-        public ReactiveCollection<IdentificationUnitVM> SubUnits { get; private set; }
+    public class IdentificationUnitVM : ElementVMBase<IdentificationUnit>
+    {
+        public override string Description { get { return Model.WorkingName; } }
+        public override Icon Icon { get { return Icon.IdentificationUnit; } }
+
+        public ReactiveCollection<IElementVM<IdentificationUnit>> SubUnits { get; private set; }
 
         private bool _HasSubUnits;
 
@@ -23,19 +23,19 @@ namespace DiversityPhone.ViewModels
         }
 
 
-        
-        public IdentificationUnitVM (IdentificationUnit model)
-            : base(model)
-	    {
-            model.ObservableForProperty(iu => iu.WorkingName)
-                .Subscribe(_=>this.RaisePropertyChanged(x => x.Description));  
 
-            SubUnits = new ReactiveCollection<IdentificationUnitVM>();
+        public IdentificationUnitVM(IdentificationUnit model)
+            : base(model)
+        {
+            model.ObservableForProperty(iu => iu.WorkingName)
+                .Subscribe(_ => this.RaisePropertyChanged(x => x.Description));
+
+            SubUnits = new ReactiveCollection<IElementVM<IdentificationUnit>>();
             SubUnits
                 .CollectionCountChanged
                 .Select(c => c > 0)
                 .Subscribe(x => HasSubUnits = x);
-	    }
+        }
     }
 
 }

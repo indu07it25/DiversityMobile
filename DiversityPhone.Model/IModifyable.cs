@@ -3,9 +3,8 @@ namespace DiversityPhone.Model
 {
     public enum ModificationState
     {
-        New, // Persisted Nowhere
-        Unmodified, // Persisted Remotely & Locally
-        Modified // Persisted Locally
+        Unmodified = 1, // Persisted Remotely & Locally
+        Modified = 2 // Persisted Locally
     }
     public interface IModifyable
     {

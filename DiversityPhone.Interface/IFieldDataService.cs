@@ -2,6 +2,7 @@
 {
     using DiversityPhone.Model;
     using System.Collections.Generic;
+    using System.Diagnostics.Contracts;
 
     public interface IFieldDataService : IRepository
     {
@@ -21,11 +22,15 @@
 
         public static IEnumerable<MultimediaObject> GetNewMultimedia(this IFieldDataService This)
         {
+            Contract.Requires(This != null);
             return This.Get<MultimediaObject>(mmo => mmo.CollectionURI == null);
         }
 
         public static IEnumerable<Event> GetEventsForSeries(this IFieldDataService This, EventSeries es)
         {
+            Contract.Requires(This != null);
+            Contract.Requires(es != null);
+
             //Workaround for the fact, that ev.SeriesID == es.SeriesID doesn't work for null values
             if (es.IsNoEventSeries())
             {

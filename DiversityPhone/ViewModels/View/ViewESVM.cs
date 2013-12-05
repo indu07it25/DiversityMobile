@@ -20,7 +20,7 @@
         public ReactiveCommand<IElementVM<Event>> SelectEvent { get; private set; }
         #endregion
 
-        public ReactiveCollection<EventVM> EventList { get; private set; }
+        public ReactiveCollection<IElementVM<Event>> EventList { get; private set; }
 
         public ViewESVM(DataVMServices Services)
             : base(Services)
@@ -30,9 +30,9 @@
             EditSeries
                 .ToMessage(Services.Messenger, MessageContracts.EDIT);
 
-            EventList = new ReactiveCollection<EventVM>();
+            EventList = new ReactiveCollection<IElementVM<Event>>();
             EventList
-                .ListenToChanges<Event, EventVM>(ev => ev.SeriesID == Current.Model.EventSeriesID());
+                .ListenToChanges<Event>(ev => ev.SeriesID == Current.Model.EventSeriesID());
 
             CurrentModelObservable
                 .Merge(

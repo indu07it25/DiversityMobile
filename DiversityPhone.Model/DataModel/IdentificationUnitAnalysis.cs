@@ -141,8 +141,7 @@ namespace DiversityPhone.Model
 		}
 		
         public IdentificationUnitAnalysis()
-        {
-            this.ModificationState = ModificationState.New;            
+        {            
             this.AnalysisDate = DateTime.Now;                      
         }
 

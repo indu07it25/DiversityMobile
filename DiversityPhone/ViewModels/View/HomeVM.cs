@@ -3,29 +3,29 @@
     using DiversityPhone.Model;
     using ReactiveUI;
     using ReactiveUI.Xaml;
-    using System;
     using System.Linq;
     using System.Reactive;
     using System.Reactive.Linq;
+    using System.Windows.Input;
 
     public class HomeVM : ReactiveObject, IPageServices<MapVMServices>
     {
         public MapVMServices Services { get; set; }
 
-        private ReactiveAsyncCommand getSeries = new ReactiveAsyncCommand();
+        private ReactiveAsyncCommand getSeries;
 
         #region Commands
-        public ReactiveCommand Settings { get; private set; }
+        public ICommand Settings { get; private set; }
         public ReactiveCommand Add { get; private set; }
         public ReactiveCommand Maps { get; private set; }
-        public ReactiveCommand Help { get; private set; }
+        public ICommand Help { get; private set; }
 
         public ReactiveCommand<IElementVM<EventSeries>> SelectSeries { get; private set; }
         public ReactiveCommand<IElementVM<EventSeries>> EditSeries { get; private set; }
         #endregion
 
         #region Properties
-        public ReactiveCollection<EventSeriesVM> SeriesList
+        public ReactiveCollection<IElementVM<EventSeries>> SeriesList
         {
             get;
             private set;
@@ -38,24 +38,18 @@
         {
             this.Services = Services;
 
+            var seriesLists =
+                Services.Messenger.Listen<EventMessage>(MessageContracts.INIT)
+                    .Select(_ =>
+                        {
+                            return Enumerable.Concat(
+                                Enumerable.Repeat(NoEventSeriesMixin.NoEventSeries, 1),
+                                Services.Storage.GetAll<EventSeries>()
+                                );
+                        });
 
             //EventSeries
-            SeriesList = new ReactiveCollection<EventSeriesVM>();
-
-            getSeries.RegisterAsyncFunction(_ =>
-                    Enumerable.Repeat(NoEventSeriesMixin.NoEventSeries, 1)
-                    .Concat(
-                        Services.Storage
-                        .GetAll<EventSeries>()
-                        )
-                    .Select(es => new EventSeriesVM(es))
-                )
-                .SelectMany(vm => vm)
-                .ObserveOn(Services.Dispatcher)
-                .Subscribe(SeriesList.Add);
-
-            SeriesList
-                    .ListenToChanges<EventSeries, EventSeriesVM>();
+            SeriesList = new ListeningVMCollection<EventSeries>(Services, seriesLists);
 
             (SelectSeries = new ReactiveCommand<IElementVM<EventSeries>>())
                 .ToMessage(Services.Messenger, MessageContracts.VIEW);
@@ -88,9 +82,7 @@
                 openSeries
                 .Select(openseries => openseries == null);
 
-            Settings = new ReactiveCommand();
-            Settings.Select(_ => Page.Settings)
-                .ToMessage(Services.Messenger);
+            Settings = new GoToPageCommand(Services.Messenger, Page.Settings);
 
             Add = new ReactiveCommand(noOpenSeries);
             Add.Select(_ => new EventSeriesVM(new EventSeries()) as IElementVM<EventSeries>)
@@ -100,14 +92,10 @@
             Maps.Select(_ => null as ILocalizable)
                 .ToMessage(Services.Messenger, MessageContracts.VIEW);
 
-            Help = new ReactiveCommand();
-            Help.Select(_ => Page.Info)
-               .ToMessage(Services.Messenger);
+            Help = new GoToPageCommand(Services.Messenger, Page.Info);
 
 
-            Services.Messenger.Listen<EventMessage>(MessageContracts.INIT)
-                .Do(_ => SeriesList.Clear())
-                .Subscribe(_ => getSeries.Execute(null));
+
         }
     }
 }

@@ -1,7 +1,8 @@
 ﻿namespace DiversityPhone.Interface
 {
-    public interface IEditPolicy
+    public interface IViewEditPolicy
     {
+        bool CanView<T>(T entity);
         bool CanEdit<T>(T entity);
     }
 }

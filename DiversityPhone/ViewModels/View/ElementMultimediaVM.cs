@@ -9,7 +9,7 @@ using System.Reactive.Subjects;
 
 namespace DiversityPhone.ViewModels
 {
-    public class ElementMultimediaVM : ReactiveCollection<MultimediaObjectVM>, IObserver<IMultimediaOwner>
+    public class ElementMultimediaVM : ReactiveCollection<IElementVM<MultimediaObject>>, IObserver<IMultimediaOwner>
     {
         readonly IFieldDataService Storage;
 
@@ -44,7 +44,7 @@ namespace DiversityPhone.ViewModels
 
             _Owner = new ObservableAsPropertyHelper<IMultimediaOwner>(ownerSubject, (o) => { }, null);
 
-            this.ListenToChanges<MultimediaObject, MultimediaObjectVM>(mmo => Owner != null && mmo.OwnerType == Owner.EntityType && mmo.RelatedId == Owner.EntityID);
+            this.ListenToChanges<MultimediaObject>(mmo => Owner != null && mmo.OwnerType == Owner.EntityType && mmo.RelatedId == Owner.EntityID);
 
             SelectMultimedia = new ReactiveCommand<IElementVM<MultimediaObject>>();
             SelectMultimedia

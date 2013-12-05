@@ -2,12 +2,15 @@
 using DiversityPhone.Model;
 using DiversityPhone.Services;
 using DiversityPhone.Services.BackgroundTasks;
+using DiversityPhone.Storage;
 using DiversityPhone.ViewModels;
+using DiversityPhone.ViewModels.Elements;
 using DiversityPhone.ViewModels.Utility;
 using Microsoft.Phone.Controls;
 using Microsoft.Phone.Shell;
 using Ninject;
 using Ninject.Extensions.Factory;
+using Ninject.Selection.Heuristics;
 using ReactiveUI;
 using System;
 using System.Reactive.Concurrency;
@@ -152,11 +155,16 @@ namespace DiversityPhone
 
                 Bind<IStoreImages>().To<MultimediaStorageService>().InSingletonScope();
                 Bind<IStoreMultimedia>().ToConstant(Kernel.Get<IStoreImages>());
+                Bind<IVocabularyService>().To<VocabularyService>().InSingletonScope();
+                Bind<ICreateViewModels>().To<VMFactory>().InSingletonScope();
+
+                Bind<IDeletePolicy>().To<CascadingDeleter>().InSingletonScope();
+                Bind<IViewEditPolicy>().To<EntityEditPolicy>().InSingletonScope();
+
                 Bind<FieldDataService>().ToSelf().InSingletonScope();
                 Bind<IFieldDataService>().ToConstant(Kernel.Get<FieldDataService>());
                 Bind<IKeyMappingService>().ToConstant(Kernel.Get<FieldDataService>());
 
-                Bind<IVocabularyService>().To<VocabularyService>().InSingletonScope();
                 Bind<ITaxonService>().To<TaxonService>().InSingletonScope();
                 Bind<IMapStorageService>().To<MapStorageService>().InSingletonScope();
                 Bind<IMapTransferService>().To<MapTransferService>().InSingletonScope();
@@ -215,6 +223,7 @@ namespace DiversityPhone
         private static async Task InitializeAsync()
         {
             Kernel = new StandardKernel();
+            Kernel.Components.Add<IInjectionHeuristic, CustomInjectionHeuristic>();
             Kernel.Bind<PhoneApplicationFrame>().ToConstant(RootFrame);
             Kernel.Load<FuncModule>();
             Kernel.Load<ServiceModule>();

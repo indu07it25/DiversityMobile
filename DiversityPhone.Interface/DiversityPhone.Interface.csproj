@@ -129,7 +129,7 @@
     <Compile Include="ICreateViewModels.cs" />
     <Compile Include="ICurrentCredentials.cs" />
     <Compile Include="IDiversityServiceClient.cs" />
-    <Compile Include="IEditPolicy.cs" />
+    <Compile Include="IViewEditPolicy.cs" />
     <Compile Include="IElementVM.cs" />
     <Compile Include="IFieldDataService.cs" />
     <Compile Include="IKeyMappingService.cs" />

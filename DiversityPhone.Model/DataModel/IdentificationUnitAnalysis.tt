@@ -35,8 +35,7 @@ namespace DiversityPhone.Model
 <# Row("ModificationState", "ModificationState"); #>
 
         public IdentificationUnitAnalysis()
-        {
-            this.ModificationState = ModificationState.New;            
+        {            
             this.AnalysisDate = DateTime.Now;                      
         }
 

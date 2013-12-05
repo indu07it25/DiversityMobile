@@ -195,6 +195,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CustomInjectionHeuristic.cs" />
     <Compile Include="Helper\SwitchableCommand.cs" />
     <Compile Include="Helper\ObservableMixin.cs" />
     <Compile Include="Helper\ReactiveCommandMixin.cs" />
@@ -225,6 +226,11 @@
     <Compile Include="ViewModels\Base\ElementVMBase.cs" />
     <Compile Include="ViewModels\Base\PageVMBase.cs" />
     <Compile Include="ViewModels\Base\ViewPageVMBase.cs" />
+    <Compile Include="ViewModels\Components\AsyncLoadCollection.cs" />
+    <Compile Include="ViewModels\Components\CurrentElement.cs" />
+    <Compile Include="ViewModels\Components\GoToPageCommand.cs" />
+    <Compile Include="ViewModels\Components\ListeningVMCollection.cs" />
+    <Compile Include="ViewModels\Components\ShowMapCommand.cs" />
     <Compile Include="ViewModels\Edit\EditAnalysisVM.cs" />
     <Compile Include="ViewModels\Edit\EditCSVM.cs" />
     <Compile Include="ViewModels\Edit\EditESVM.cs" />
@@ -238,6 +244,7 @@
     <Compile Include="ViewModels\Elements\MultimediaObjectVM.cs" />
     <Compile Include="ViewModels\Elements\PropertyVM.cs" />
     <Compile Include="ViewModels\Elements\SpecimenVM.cs" />
+    <Compile Include="ViewModels\Elements\VMFactory.cs" />
     <Compile Include="ViewModels\Interface\IAudioVideoPageVM.cs" />
     <Compile Include="ViewModels\Interface\IDeletePageVM.cs" />
     <Compile Include="ViewModels\Interface\IEditPageVM.cs" />

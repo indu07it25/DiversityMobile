@@ -45,7 +45,7 @@
 
         public ElementMultimediaVM MultimediaList { get; private set; }
 
-        public ReactiveCollection<IdentificationUnitVM> UnitList { get; private set; }
+        public ReactiveCollection<IElementVM<IdentificationUnit>> UnitList { get; private set; }
         #endregion
 
         public ViewCSVM(
@@ -65,7 +65,7 @@
                 .ObserveOn(Services.Dispatcher)
                 .CreateCollection();
 
-            UnitList.ListenToChanges<IdentificationUnit, IdentificationUnitVM>(iu => iu.RelatedUnitID == null);
+            UnitList.ListenToChanges<IdentificationUnit>(iu => iu.RelatedUnitID == null);
 
             CurrentModelObservable
                 .Do(_ => UnitList.Clear())
@@ -92,10 +92,10 @@
         }
 
 
-        private IEnumerable<IdentificationUnitVM> buildIUTree(Specimen spec)
+        private IEnumerable<IElementVM<IdentificationUnit>> buildIUTree(Specimen spec)
         {
-            IDictionary<int, IdentificationUnitVM> vmMap = new Dictionary<int, IdentificationUnitVM>();
-            IList<IdentificationUnitVM> toplevel = new List<IdentificationUnitVM>();
+            var vmMap = new Dictionary<int, IdentificationUnitVM>();
+            var toplevel = new List<IElementVM<IdentificationUnit>>();
 
             Queue<IdentificationUnit> work_left = new Queue<IdentificationUnit>(Services.Storage.Get<IdentificationUnit>(spec.Units()));
 

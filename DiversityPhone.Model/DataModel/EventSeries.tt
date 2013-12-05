@@ -40,8 +40,7 @@ namespace DiversityPhone.Model
             this.SeriesCode = string.Empty;
             this.SeriesStart = DateTime.Now;
             this.SeriesEnd = null;
-            this.SeriesID = 0;
-            this.ModificationState = ModificationState.New;            
+            this.SeriesID = 0;     
         }
 
 		public DBObjectType EntityType

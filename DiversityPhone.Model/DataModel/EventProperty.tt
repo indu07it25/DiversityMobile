@@ -30,11 +30,6 @@ namespace DiversityPhone.Model
 <# Row("string", "PropertyUri"); #>
   
 <# Row("ModificationState", "ModificationState"); #>
-  
-		public EventProperty()
-        {            
-            this.ModificationState = ModificationState.New;
-        }
 
 		public int? EntityID 
 		{

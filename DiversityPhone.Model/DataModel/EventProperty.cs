@@ -111,12 +111,7 @@ namespace DiversityPhone.Model
 				}  
 			}
 		}
-		  
-		public EventProperty()
-        {            
-            this.ModificationState = ModificationState.New;
-        }
-
+		
 		public int? EntityID 
 		{
 			get { return EventID; }

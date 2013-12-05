@@ -215,8 +215,7 @@ namespace DiversityPhone.Model
 		public Event()
         {
             this.SeriesID = null;
-            this.CollectionDate = DateTime.Now;            
-            this.ModificationState = ModificationState.New;
+            this.CollectionDate = DateTime.Now;          
 		}
 
  		new public Event MemberwiseClone()

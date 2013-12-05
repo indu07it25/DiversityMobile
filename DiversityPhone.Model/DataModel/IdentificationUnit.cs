@@ -311,8 +311,7 @@ namespace DiversityPhone.Model
 		
 		  
 		public IdentificationUnit()
-        {
-            this.ModificationState = ModificationState.New;            
+        {       
 
             this.AnalysisDate = DateTime.Now;//TODO Something useful?
             this.RelatedUnitID = null;

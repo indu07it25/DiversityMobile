@@ -29,35 +29,50 @@
 
     public class PageVMServices
     {
-        [Dispatcher]
+        [Inject, Dispatcher]
         public IScheduler Dispatcher { get; set; }
-        [ThreadPool]
+        [Inject, ThreadPool]
         public IScheduler ThreadPool { get; set; }
+        [Inject]
         public IMessageBus Messenger { get; set; }
+        [Inject]
         public INotificationService Notifications { get; set; }
+        [Inject]
         public IPageActivation Activation { get; set; }
+        [Inject]
+        public ICreateViewModels VMFactory { get; set; }
     }
 
     public class DataVMServices : PageVMServices
     {
+        [Inject]
         public IFieldDataService Storage { get; set; }
+        [Inject]
         public IVocabularyService Vocabulary { get; set; }
+        [Inject]
         public ITaxonService Taxa { get; set; }
-        public IEditPolicy EditPolicy { get; set; }
+        [Inject]
+        public IViewEditPolicy EditPolicy { get; set; }
     }
 
     public class MapVMServices : DataVMServices
     {
+        [Inject]
         public ILocationService Location { get; set; }
+        [Inject]
         public IMapStorageService Maps { get; set; }
     }
 
 
     public class OnlineVMServices : PageVMServices
     {
+        [Inject]
         public IConnectivityService Connectivity { get; set; }
+        [Inject]
         public IDiversityServiceClient Repository { get; set; }
+        [Inject]
         public IKeyMappingService Mappings { get; set; }
+        [Inject]
         public ICredentialsService Credentials { get; set; }
     }
 

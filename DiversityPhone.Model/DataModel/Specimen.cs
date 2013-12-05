@@ -114,8 +114,7 @@ namespace DiversityPhone.Model
 		
         public Specimen()
         {
-            this.AccessionNumber = null;            
-            this.ModificationState = ModificationState.New;            
+            this.AccessionNumber = null;                       
         }
 
 

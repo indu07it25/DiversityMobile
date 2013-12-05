@@ -50,10 +50,10 @@ namespace DiversityPhone.ViewModels
         }
 
         private SerialDisposable _SubunitListener = new SerialDisposable();
-        private ObservableAsPropertyHelper<ReactiveCollection<IdentificationUnitVM>> _Subunits;
-        public ReactiveCollection<IdentificationUnitVM> Subunits { get { return _Subunits.Value; } }
+        private ObservableAsPropertyHelper<ReactiveCollection<IElementVM<IdentificationUnit>>> _Subunits;
+        public ReactiveCollection<IElementVM<IdentificationUnit>> Subunits { get { return _Subunits.Value; } }
 
-        public ReactiveCollection<IdentificationUnitAnalysisVM> Analyses { get; private set; }
+        public ReactiveCollection<IElementVM<IdentificationUnitAnalysis>> Analyses { get; private set; }
 
         public ElementMultimediaVM MultimediaList { get; private set; }
 
@@ -83,7 +83,7 @@ namespace DiversityPhone.ViewModels
             _Subunits = this.ObservableToProperty(
                 CurrentObservable
                 .Select(vm => (vm as IdentificationUnitVM).SubUnits)
-                .Do(units => _SubunitListener.Disposable = units.ListenToChanges<IdentificationUnit, IdentificationUnitVM>(iu => iu.RelatedUnitID == Current.Model.UnitID)),
+                .Do(units => _SubunitListener.Disposable = units.ListenToChanges<IdentificationUnit>(iu => iu.RelatedUnitID == Current.Model.UnitID)),
                 x => x.Subunits);
 
             //Multimedia
@@ -92,11 +92,11 @@ namespace DiversityPhone.ViewModels
                 .Select(m => m as IMultimediaOwner)
                 .Subscribe(MultimediaList);
 
-            Analyses = getAnalyses.RegisterAsyncFunction(iu => Services.Storage.Get<IdentificationUnitAnalysis>((iu as IdentificationUnit).Analyses()).Select(iuan => new IdentificationUnitAnalysisVM(iuan, Services.Vocabulary)))
+            Analyses = getAnalyses.RegisterAsyncFunction(iu => Services.Storage.Get<IdentificationUnitAnalysis>((iu as IdentificationUnit).Analyses()).Select(Services.VMFactory.CreateVM))
                 .SelectMany(vms => vms)
                 .CreateCollection();
 
-            Analyses.ListenToChanges<IdentificationUnitAnalysis, IdentificationUnitAnalysisVM>(iuan => iuan.UnitID == Current.Model.UnitID);
+            Analyses.ListenToChanges<IdentificationUnitAnalysis>(iuan => iuan.UnitID == Current.Model.UnitID);
 
             CurrentModelObservable
                 .Do(_ => SelectedPivot = Pivots.Subunits)
