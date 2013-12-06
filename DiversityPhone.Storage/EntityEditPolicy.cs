@@ -6,6 +6,22 @@ namespace DiversityPhone.Storage
 {
     public class EntityEditPolicy : IViewEditPolicy
     {
+        public bool CanViewDetails<T>(T entity)
+        {
+            if (entity is EventSeries)
+            {
+                return !(entity as EventSeries).IsNoEventSeries();
+            }
+
+            return true;
+        }
+
+        public bool CanView<T>(T entity)
+        {
+            return true;
+        }
+
+
         public bool CanEdit<T>(T entity)
         {
             if (entity is IModifyable)
@@ -16,16 +32,6 @@ namespace DiversityPhone.Storage
             Debugger.Break();
 
             return false;
-        }
-
-        public bool CanView<T>(T entity)
-        {
-            if (entity is EventSeries)
-            {
-                return !(entity as EventSeries).IsNoEventSeries();
-            }
-
-            return true;
         }
     }
 }

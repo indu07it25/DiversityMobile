@@ -6,6 +6,7 @@
     xmlns:shell="clr-namespace:Microsoft.Phone.Shell;assembly=Microsoft.Phone"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:vw="clr-namespace:DiversityPhone.View"
     FontFamily="{StaticResource PhoneFontFamilyNormal}"
     FontSize="{StaticResource PhoneFontSizeNormal}"
     Foreground="{StaticResource PhoneForegroundBrush}"
@@ -20,24 +21,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Button Grid.Row="0" 
-                Style="{StaticResource ItemButtonStyle}" 
-                ContentTemplate="{StaticResource ElementItemTemplate}"
-                Content="{Binding Current}"
-                Command="{Binding EditSeries}"
-                CommandParameter="{Binding Current}"/>
-        <ListBox Grid.Row="1" ItemsSource="{Binding EventList}">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <Button Style="{StaticResource ItemButtonStyle}" 
-                            Command="{Binding DataContext.SelectEvent, ElementName=currentPage}" 
-                            CommandParameter="{Binding}">
-                        <ContentControl Content="{Binding}" 
-                                        ContentTemplate="{StaticResource ElementItemTemplate}"/>
-                    </Button>
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>        
+        <vw:CurrentElementView DataContext="{Binding Current}"/>
+        <vw:ChildListView DataContext="{Binding Events}"/>        
     </Grid>
     
     

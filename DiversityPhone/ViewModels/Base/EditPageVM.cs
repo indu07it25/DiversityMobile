@@ -1,16 +1,17 @@
-﻿using DiversityPhone.Interface;
+﻿
 using DiversityPhone.Model;
 using ReactiveUI;
 using ReactiveUI.Xaml;
-using System;
-using System.Reactive;
-using System.Reactive.Linq;
-using System.Reactive.Subjects;
-
 namespace DiversityPhone.ViewModels
 {
-    public abstract class EditPageVMBase<T> : ElementPageVMBase<T>, IEditPageVM where T : IWriteableEntity, IReactiveNotifyPropertyChanged
+    class EditPageVM<T> : IPageServices<DataVMServices>
     {
+        public DataVMServices Services
+        {
+            get;
+            private set;
+        }
+
         public IReactiveCommand Save { get; private set; }
         public IReactiveCommand ToggleEditable { get; private set; }
         public IReactiveCommand Delete { get; private set; }
@@ -28,22 +29,12 @@ namespace DiversityPhone.ViewModels
             }
         }
 
-        protected ISubject<bool> CanSaveSubject { get; private set; }
-        private ISubject<Unit> DeleteSubject = new Subject<Unit>();
-
-        public EditPageVMBase(
-            DataVMServices Services,
-            Predicate<T> filter = null
-            )
-            : base(Services)
+        public EditPageVM(DataVMServices Services, Page thisPage)
         {
-            CanSaveSubject = new Subject<bool>();
-            Save = new ReactiveCommand(CanSaveSubject);
-            Save
-                .Do(_ => UpdateModel())
-                .Select(_ => Current)
-                .Do(_ => Services.Messenger.SendMessage(Page.Previous))
-                .ToMessage(Services.Messenger, MessageContracts.SAVE);
+            Services.Messenger.RegisterPageFor<IElementVM<T>>(thisPage, MessageContracts.NEW);
+            Services.Messenger.RegisterPageFor<IElementVM<T>>(thisPage, MessageContracts.VIEW_DETAILS);
+
+            this.Services = Services;            
 
             ToggleEditable = new ReactiveCommand(ModelByVisitObservable.Select(Services.EditPolicy.CanEdit));
             _IsEditable = this.ObservableToProperty(
@@ -72,5 +63,15 @@ namespace DiversityPhone.ViewModels
         }
 
         protected virtual void UpdateModel() { }
+
+
+        
+
+
+        }
+
+        protected virtual void UpdateView(T model) { }
+        protected virtual void UpdateModel(T model) { }
+
     }
 }

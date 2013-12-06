@@ -53,7 +53,7 @@ namespace DiversityPhone.ViewModels
 
             SelectMultimedia
                 .Where(mmo => mmo.Model.MediaType != MediaType.Image)
-                .ToMessage(Messenger, MessageContracts.EDIT);
+                .ToMessage(Messenger, MessageContracts.VIEW_DETAILS);
 
             AddMultimedia = new ReactiveCommand();
             var newmmo =

@@ -220,14 +220,18 @@
     <Compile Include="Services\NavigationService.cs" />
     <Compile Include="Services\NotificationService.cs" />
     <Compile Include="Services\VideoService.cs" />
-    <Compile Include="ViewModels\Base\GenericItemCommands.cs" />
     <Compile Include="ViewModels\Base\EditPageVMBase.cs" />
     <Compile Include="ViewModels\Base\ElementPageVMBase.cs" />
     <Compile Include="ViewModels\Base\ElementVMBase.cs" />
     <Compile Include="ViewModels\Base\PageVMBase.cs" />
+    <Compile Include="ViewModels\Components\ChildListVM.cs" />
+    <Compile Include="ViewModels\Components\EditCommand.cs" />
+    <Compile Include="ViewModels\Components\NewChildCommand.cs" />
+    <Compile Include="ViewModels\Components\ViewCommand.cs" />
     <Compile Include="ViewModels\Base\ViewPageVMBase.cs" />
     <Compile Include="ViewModels\Components\AsyncLoadCollection.cs" />
     <Compile Include="ViewModels\Components\CurrentElement.cs" />
+    <Compile Include="ViewModels\Components\DeleteCommand.cs" />
     <Compile Include="ViewModels\Components\GoToPageCommand.cs" />
     <Compile Include="ViewModels\Components\ListeningVMCollection.cs" />
     <Compile Include="ViewModels\Components\ShowMapCommand.cs" />
@@ -236,6 +240,7 @@
     <Compile Include="ViewModels\Edit\EditESVM.cs" />
     <Compile Include="ViewModels\Edit\EditEVVM.cs" />
     <Compile Include="ViewModels\Edit\EditIUVM.cs" />
+    <Compile Include="ViewModels\Base\EditPageVM.cs" />
     <Compile Include="ViewModels\Edit\EditPropertyVM.cs" />
     <Compile Include="ViewModels\Elements\EventSeriesVM.cs" />
     <Compile Include="ViewModels\Elements\EventVM.cs" />
@@ -286,8 +291,14 @@
     <Compile Include="View\Audio.xaml.cs">
       <DependentUpon>Audio.xaml</DependentUpon>
     </Compile>
+    <Compile Include="View\Controls\ChildListView.xaml.cs">
+      <DependentUpon>ChildListView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Controls\CommandNotAvailableLabel.cs" />
     <Compile Include="View\Controls\ConditionalLabel.cs" />
+    <Compile Include="View\Controls\CurrentElementView.xaml.cs">
+      <DependentUpon>CurrentElementView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Controls\DiversityMobilePageHeader.xaml.cs">
       <DependentUpon>DiversityMobilePageHeader.xaml</DependentUpon>
     </Compile>
@@ -608,6 +619,14 @@
     <Page Include="View\Audio.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="View\Controls\ChildListView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Controls\CurrentElementView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="View\Controls\DiversityMobilePageHeader.xaml">
       <SubType>Designer</SubType>

@@ -13,8 +13,10 @@
         public const string STOP = "Stop";
 
         public const string VIEW = "View";
-        public const string EDIT = "Edit";
+        public const string VIEW_DETAILS = "Edit";
         public const string NEW = "New";
+
+        public const string MAP = "Map";
 
         //Events
         /// <summary>

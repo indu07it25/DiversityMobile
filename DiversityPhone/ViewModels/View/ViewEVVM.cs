@@ -62,7 +62,7 @@
             //Current
             EditEvent = new ReactiveCommand<IElementVM<Event>>();
             EditEvent
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             //Specimen
             SpecList = getSpecimen.RegisterAsyncFunction(ev => Services.Storage.Get((ev as Event).Specimen()).Select(Services.VMFactory.CreateVM))
@@ -90,7 +90,7 @@
 
             SelectProperty = new ReactiveCommand<IElementVM<EventProperty>>();
             SelectProperty
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             //Multimedia
             this.MultimediaList = MultimediaList;
@@ -112,10 +112,10 @@
             Add = new ReactiveCommand(canAdd);
             Add.Where(_ => SelectedPivot == Pivots.Specimen)
                 .Select(_ => new SpecimenVM(new Specimen() { EventID = Current.Model.EventID.Value }) as IElementVM<Specimen>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
             Add.Where(_ => SelectedPivot == Pivots.Descriptions)
                 .Select(_ => new PropertyVM(new EventProperty() { EventID = Current.Model.EventID }) as IElementVM<EventProperty>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
             Add.Where(_ => SelectedPivot == Pivots.Multimedia)
                 .Subscribe(MultimediaList.AddMultimedia.Execute);
 

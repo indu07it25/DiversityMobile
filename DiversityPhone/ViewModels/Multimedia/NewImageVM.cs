@@ -12,7 +12,7 @@ namespace DiversityPhone.ViewModels
         public NewImageVM(IMessageBus Messenger,
             IStoreImages ImageStore)
         {
-            Messenger.Listen<IElementVM<MultimediaObject>>(MessageContracts.EDIT)
+            Messenger.Listen<IElementVM<MultimediaObject>>(MessageContracts.VIEW_DETAILS)
                 .Where(vm => vm.Model.MediaType == MediaType.Image && vm.Model.IsNew())
                 .SelectMany(mmo =>
                 {

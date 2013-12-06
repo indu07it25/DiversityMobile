@@ -1,34 +1,44 @@
-﻿using DiversityPhone.Interface;
-using DiversityPhone.Model;
+﻿using DiversityPhone.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Reactive.Disposables;
 using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-    class ListeningVMCollection<T> : AsyncLoadCollection<IElementVM<T>>
+    public class VMChangeListener<T> : IDisposable
     {
-        private static IObservable<IEnumerable<IElementVM<T>>> GetVMStream(ICreateViewModels VMFactory, IObservable<IEnumerable<T>> contentStream)
+        private CompositeDisposable _Subscriptions;
+
+        private ICollection<T> _ItemCollection;
+
+        private Func<T, bool> _ItemFilter;
+        public Func<T, bool> ItemFilter
         {
-            return contentStream
-                .Select(content => content.Select(VMFactory.CreateVM));
+            get { return _ItemFilter; }
+            set { _ItemFilter = value ?? (i => true); }
         }
 
-        public ListeningVMCollection(PageVMServices Services, IObservable<IEnumerable<T>> contentStream, Predicate<T> itemFilter = null)
-            : base(GetVMStream(Services.VMFactory, contentStream), Services.ThreadPool, Services.Dispatcher)
+        public VMChangeListener(PageVMServices Services, ICollection<T> ItemCollection, Func<T, bool> itemFilter = null)
         {
-            itemFilter = itemFilter ?? (i => true);
+            ItemFilter = itemFilter;
+            _ItemCollection = ItemCollection;
 
-            Services.Messenger.Listen<IElementVM<T>>(MessageContracts.SAVE_NEW)
-                .Where(vm => itemFilter(vm.Model))
-                .ObserveOn(Services.Dispatcher)
-                .Subscribe(this.Add);
+            _Subscriptions = new CompositeDisposable(
+                Services.Messenger.Listen<T>(MessageContracts.SAVE_NEW)
+                    .Where(x => ItemFilter(x))
+                    .ObserveOn(Services.Dispatcher)
+                    .Subscribe(ItemCollection.Add),
+                Services.Messenger.Listen<T>(MessageContracts.DELETE)
+                    .Where(x => ItemFilter(x))
+                    .ObserveOn(Services.Dispatcher)
+                    .Subscribe(i => ItemCollection.Remove(i))
+            );
+        }
 
-            Services.Messenger.Listen<IElementVM<T>>(MessageContracts.DELETE)
-                .Where(vm => itemFilter(vm.Model))
-                .ObserveOn(Services.Dispatcher)
-                .Subscribe(i => this.Remove(i));
+        public void Dispose()
+        {
+            _Subscriptions.Dispose();
         }
     }
 }

@@ -45,21 +45,21 @@ namespace DiversityPhone.Services
             _frame.Navigated += (s, args) => { NavigationFinished(); };
 
             var mmoEdit = Observable.Merge(
-                Messenger.Listen<IElementVM<MultimediaObject>>(MessageContracts.EDIT)
+                Messenger.Listen<IElementVM<MultimediaObject>>(MessageContracts.VIEW_DETAILS)
                 );
 
             Messenger.RegisterMessageSource(
                 Observable.Merge(
                     Messenger.Listen<IElementVM<EventSeries>>(MessageContracts.VIEW).Select(_ => Page.ViewES),
-                    Messenger.Listen<IElementVM<EventSeries>>(MessageContracts.EDIT).Select(_ => Page.EditES),
+                    Messenger.Listen<IElementVM<EventSeries>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditES),
                     Messenger.Listen<IElementVM<Event>>(MessageContracts.VIEW).Select(_ => Page.ViewEV),
-                    Messenger.Listen<IElementVM<Event>>(MessageContracts.EDIT).Select(_ => Page.EditEV),
+                    Messenger.Listen<IElementVM<Event>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditEV),
                     Messenger.Listen<IElementVM<Specimen>>(MessageContracts.VIEW).Select(_ => Page.ViewCS),
-                    Messenger.Listen<IElementVM<Specimen>>(MessageContracts.EDIT).Select(_ => Page.EditCS),
+                    Messenger.Listen<IElementVM<Specimen>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditCS),
                     Messenger.Listen<IElementVM<IdentificationUnit>>(MessageContracts.VIEW).Select(_ => Page.ViewIU),
-                    Messenger.Listen<IElementVM<IdentificationUnit>>(MessageContracts.EDIT).Select(_ => Page.EditIU),
-                    Messenger.Listen<IElementVM<EventProperty>>(MessageContracts.EDIT).Select(_ => Page.EditEventProperty),
-                    Messenger.Listen<IElementVM<IdentificationUnitAnalysis>>(MessageContracts.EDIT).Select(_ => Page.EditIUAN),
+                    Messenger.Listen<IElementVM<IdentificationUnit>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditIU),
+                    Messenger.Listen<IElementVM<EventProperty>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditEventProperty),
+                    Messenger.Listen<IElementVM<IdentificationUnitAnalysis>>(MessageContracts.VIEW_DETAILS).Select(_ => Page.EditIUAN),
                     Messenger.Listen<IElementVM<MultimediaObject>>(MessageContracts.VIEW).Select(_ => Page.ViewImage),
                     mmoEdit.Where(vm => vm.Model.MediaType == MediaType.Video).Select(_ => Page.NewVideo),
                     mmoEdit.Where(vm => vm.Model.MediaType == MediaType.Audio).Select(_ => Page.NewAudio),

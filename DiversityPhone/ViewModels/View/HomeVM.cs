@@ -12,8 +12,6 @@
     {
         public MapVMServices Services { get; set; }
 
-        private ReactiveAsyncCommand getSeries;
-
         #region Commands
         public ICommand Settings { get; private set; }
         public ReactiveCommand Add { get; private set; }
@@ -45,17 +43,17 @@
                             return Enumerable.Concat(
                                 Enumerable.Repeat(NoEventSeriesMixin.NoEventSeries, 1),
                                 Services.Storage.GetAll<EventSeries>()
-                                );
+                                ).Select(Services.VMFactory.CreateVM);
                         });
 
-            //EventSeries
-            SeriesList = new ListeningVMCollection<EventSeries>(Services, seriesLists);
+            var seriesList = new AsyncLoadCollection<IElementVM<EventSeries>>(Services.ThreadPool, Services.Dispatcher);
+            seriesLists.Subscribe(seriesList.ContentObserver);
 
-            (SelectSeries = new ReactiveCommand<IElementVM<EventSeries>>())
-                .ToMessage(Services.Messenger, MessageContracts.VIEW);
+            SeriesList = seriesList;
 
-            (EditSeries = new ReactiveCommand<IElementVM<EventSeries>>(vm => vm.Model != NoEventSeriesMixin.NoEventSeries))
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+            SelectSeries = new ViewCommand<EventSeries>(Services);
+
+            EditSeries = new ViewDetailsCommand<EventSeries>(Services);
 
 
 
@@ -86,11 +84,11 @@
 
             Add = new ReactiveCommand(noOpenSeries);
             Add.Select(_ => new EventSeriesVM(new EventSeries()) as IElementVM<EventSeries>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             Maps = new ReactiveCommand();
             Maps.Select(_ => null as ILocalizable)
-                .ToMessage(Services.Messenger, MessageContracts.VIEW);
+                .ToMessage(Services.Messenger, MessageContracts.MAP);
 
             Help = new GoToPageCommand(Services.Messenger, Page.Info);
 

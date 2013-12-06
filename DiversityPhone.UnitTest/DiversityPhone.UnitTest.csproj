@@ -75,6 +75,7 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CollectionTest.cs" />
     <Compile Include="LocalizedStrings.cs" />
     <Compile Include="RepositoryTest.cs" />
     <Compile Include="MainPage.xaml.cs">

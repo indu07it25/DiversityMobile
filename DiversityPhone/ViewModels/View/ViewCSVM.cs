@@ -57,7 +57,7 @@
 
             EditSpecimen = new ReactiveCommand<IElementVM<Specimen>>(vm => !vm.Model.IsObservation());
             EditSpecimen
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             //SubUnits
             UnitList = getSubunits.RegisterAsyncFunction(spec => buildIUTree(spec as Specimen))
@@ -86,7 +86,7 @@
             Add = new ReactiveCommand();
             Add.Where(_ => SelectedPivot == Pivots.Units)
                 .Select(_ => new IdentificationUnitVM(new IdentificationUnit() { SpecimenID = Current.Model.SpecimenID.Value, RelatedUnitID = null }) as IElementVM<IdentificationUnit>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
             Add.Where(_ => SelectedPivot == Pivots.Multimedia)
                 .Subscribe(MultimediaList.AddMultimedia.Execute);
         }

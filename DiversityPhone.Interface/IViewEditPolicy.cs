@@ -3,6 +3,7 @@
     public interface IViewEditPolicy
     {
         bool CanView<T>(T entity);
+        bool CanViewDetails<T>(T entity);
         bool CanEdit<T>(T entity);
     }
 }

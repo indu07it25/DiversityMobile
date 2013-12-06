@@ -68,7 +68,7 @@ namespace DiversityPhone.ViewModels
 
             EditCurrent = new ReactiveCommand<IElementVM<IdentificationUnit>>();
             EditCurrent
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             SelectUnit = new ReactiveCommand<IElementVM<IdentificationUnit>>();
             SelectUnit
@@ -77,7 +77,7 @@ namespace DiversityPhone.ViewModels
 
             EditAnalysis = new ReactiveCommand<IElementVM<IdentificationUnitAnalysis>>();
             EditAnalysis
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
 
             _Subunits = this.ObservableToProperty(
@@ -125,12 +125,12 @@ namespace DiversityPhone.ViewModels
             Add = new ReactiveCommand(can_add_observable);
             Add.Where(_ => SelectedPivot == Pivots.Subunits)
                 .Select(_ => new IdentificationUnitVM(new IdentificationUnit() { RelatedUnitID = Current.Model.UnitID, SpecimenID = Current.Model.SpecimenID }) as IElementVM<IdentificationUnit>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
             Add.Where(_ => SelectedPivot == Pivots.Multimedia)
                 .Subscribe(MultimediaList.AddMultimedia.Execute);
             Add.Where(_ => SelectedPivot == Pivots.Descriptions)
                 .Select(_ => new IdentificationUnitAnalysisVM(new IdentificationUnitAnalysis() { UnitID = Current.Model.UnitID.Value }, Services.Vocabulary) as IElementVM<IdentificationUnitAnalysis>)
-                .ToMessage(Services.Messenger, MessageContracts.EDIT);
+                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
 
             Maps = new ReactiveCommand();
             Maps

@@ -27,14 +27,5 @@
                 SeriesEnd = DateTime.MinValue
             };
         }
-
-        public static int? EventSeriesID(this EventSeries This)
-        {
-            if (This.IsNoEventSeries())
-                return null;
-            else
-                return This.SeriesID;
-        }
-
     }
 }

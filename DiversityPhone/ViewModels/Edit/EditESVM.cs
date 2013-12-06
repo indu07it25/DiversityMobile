@@ -1,4 +1,5 @@
-﻿namespace DiversityPhone.ViewModels
+﻿
+namespace DiversityPhone.ViewModels
 {
     using DiversityPhone.Model;
     using ReactiveUI;
@@ -7,7 +8,7 @@
     using System.Reactive.Linq;
 
 
-    public class EditESVM : EditPageVMBase<EventSeries>
+    public class EditESVM : EditPageVM<EventSeries>
     {
         public ReactiveCommand FinishSeries { get; private set; }
 
@@ -26,13 +27,14 @@
             set { this.RaiseAndSetIfChanged(x => x.SeriesCode, ref _SeriesCode, value); }
         }
 
-        public ObservableAsPropertyHelper<string> _SeriesStart;
+        private string _SeriesStart;
         public string SeriesStart
         {
             get
             {
-                return _SeriesStart.Value;
+                return _SeriesStart;
             }
+            private set { this.RaiseAndSetIfChanged(x => x.SeriesStart, ref _SeriesStart, value); }
         }
 
         private DateTime? _SeriesEnd;
@@ -54,23 +56,6 @@
             : base(Services)
         {
 
-            ModelByVisitObservable
-                .Select(es => es.Description ?? string.Empty)
-                .Subscribe(x => Description = x);
-
-            ModelByVisitObservable
-                .Select(es => es.SeriesCode)
-                .Subscribe(x => SeriesCode = x);
-
-            ModelByVisitObservable
-                .Select(es => es.SeriesEnd)
-                .Subscribe(x => SeriesEnd = x);
-
-            _SeriesStart = this.ObservableToProperty(
-                CurrentModelObservable
-                .Select(es => es.SeriesStart)
-                .Select(start => string.Format("{0} {1}", start.ToShortDateString(), start.ToShortTimeString())),
-                x => x.SeriesStart);
 
             (FinishSeries = new ReactiveCommand(CurrentModelObservable.Select(es => es.SeriesEnd == null)))
                 .Select(_ => DateTime.Now as DateTime?)
@@ -83,7 +68,6 @@
 
         }
 
-        //Auf diese Weise muss bei dem Hinzufügen eines Feldes in der Datenbank hier der Code angepasst werden        
         private IObservable<bool> CanSave()
         {
             var descriptionNonEmpty =
@@ -98,6 +82,15 @@
                 .StartWith(true);
 
             return descriptionNonEmpty.BooleanAnd(endsAfterItBegins);
+        }
+
+        protected override void UpdateView(EventSeries model)
+        {
+            Description = model.Description ?? string.Empty;
+            SeriesCode = model.SeriesCode;
+            SeriesEnd = model.SeriesEnd;
+            var start = model.SeriesStart;
+            SeriesStart = string.Format("{0} {1}", start.ToShortDateString(), start.ToShortTimeString());
         }
 
         protected override void UpdateModel()

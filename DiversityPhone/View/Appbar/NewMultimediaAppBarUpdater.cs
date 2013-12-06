@@ -75,7 +75,7 @@
                     )
                     .Do(_ => restore_buttons())
                     .Select(media => new MultimediaObjectVM(new MultimediaObject() { MediaType = media, OwnerType = _mmowner.EntityType, RelatedId = _mmowner.EntityID.Value }) as IElementVM<MultimediaObject>)
-                    .ToMessage(Messenger, MessageContracts.EDIT);
+                    .ToMessage(Messenger, MessageContracts.VIEW_DETAILS);
 
 
             _buttons = new List<object>();
