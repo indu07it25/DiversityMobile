@@ -40,7 +40,7 @@
             <ListBox ItemsSource="{Binding SeriesList}" Height="479" >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
-                        <Button Style="{StaticResource ItemButtonStyle}" Command="{Binding DataContext.SelectSeries, ElementName=currentPage}" CommandParameter="{Binding}" >                            
+                        <Button Style="{StaticResource ItemButtonStyle}" Command="{Binding DataContext.SelectSeries, ElementName=currentPage}" CommandParameter="{Binding Model}" >                            
                             <ContentControl Content="{Binding}" ContentTemplate="{StaticResource ElementItemTemplate}"/>
                             
                         </Button>                                

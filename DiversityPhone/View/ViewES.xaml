@@ -21,8 +21,8 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <vw:CurrentElementView DataContext="{Binding Current}"/>
-        <vw:ChildListView DataContext="{Binding Events}"/>        
+        <vw:CurrentElementView Grid.Row="0" DataContext="{Binding Current}"/>
+        <vw:ChildListView Grid.Row="1"  DataContext="{Binding Events}"/>        
     </Grid>
     
     

@@ -15,8 +15,8 @@ namespace DiversityPhone.Services
         readonly IMessageBus Messenger;
         readonly PhoneApplicationFrame _frame;
 
-        private IPageServices _CurrentVM;
-        public IPageServices CurrentVM
+        private IPageServices<IUseActivation> _CurrentVM;
+        public IPageServices<IUseActivation> CurrentVM
         {
             get { return _CurrentVM; }
             set
@@ -77,7 +77,7 @@ namespace DiversityPhone.Services
         {
             var page = _frame.Content as PhoneApplicationPage;
             if (page != null)
-                CurrentVM = page.DataContext as IPageServices;
+                CurrentVM = page.DataContext as IPageServices<IUseActivation>;
         }
 
         private void NavigateToPage(Page p)

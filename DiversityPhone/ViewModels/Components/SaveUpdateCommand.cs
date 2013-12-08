@@ -3,13 +3,12 @@ using DiversityPhone.Interface;
 using System;
 namespace DiversityPhone.ViewModels
 {
-    class SaveUpdateCommand<T> : ReactiveCommand<IElementVM<T>> where T : class, IWriteableEntity
+    class SaveUpdateCommand<T> : ReactiveCommand<T> where T : class, IWriteableEntity
     {
         public SaveUpdateCommand(IEditPageServices Services, Func<T, bool> canSave, Action<T> updateElement)
-            : base(vm => vm != null && canSave(vm.Model), scheduler: Services.Dispatcher)
+            : base(canSave, scheduler: Services.Dispatcher)
         {
-            this.Model()
-                .Subscribe(x =>
+            this.Subscribe(x =>
                 {
                     Services.Storage.Update<T>(x, updateElement);
                 });

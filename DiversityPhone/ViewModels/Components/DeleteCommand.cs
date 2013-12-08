@@ -4,11 +4,11 @@ using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-    class DeleteCommand<T> : ReactiveCommand<IElementVM<T>> where T : IWriteableEntity
+    class DeleteCommand<T> : ReactiveCommand<T> where T : class, IWriteableEntity
     {
-        private static bool CanDelete(IElementVM<T> item)
+        private static bool CanDelete(T item)
         {
-            return (item != null) && !item.Model.IsNew();
+            return !item.IsNew();
         }
 
         public DeleteCommand(

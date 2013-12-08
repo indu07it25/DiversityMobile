@@ -76,7 +76,9 @@ namespace DiversityPhone.ViewModels
                 _Current,
                 Services.Activation.OnActivation(),
                 (m, _) => m
-            ).Subscribe(UpdateView);
+            )
+            .Do(x => Delete.CanExecute(x))
+            .Subscribe(UpdateView);
 
 
             Delete = new ParameterlessCommand(

@@ -57,6 +57,8 @@ namespace DiversityPhone.ViewModels
         {
             NotificationFilter = itemFilter;
             ItemCollection = itemCollection;
+            _Add = add;
+            _Remove = remove;
 
             _Subscriptions = new CompositeDisposable(
                 Services.Messenger.Listen<TNotify>(MessageContracts.SAVE_NEW)

@@ -11,7 +11,7 @@
 
     public interface IPageServices : IPageServices<IUseActivation> { }
 
-    public interface IPageServices<T> where T : IUseActivation
+    public interface IPageServices<out T> where T : IUseActivation
     {
         T Services { get; }
     }

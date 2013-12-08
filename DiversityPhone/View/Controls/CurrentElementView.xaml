@@ -11,6 +11,5 @@
     <Button Style="{StaticResource ItemButtonStyle}" 
             ContentTemplate="{StaticResource ElementItemTemplate}"
             Content="{Binding Current}"
-            Command="{Binding ViewDetails}"
-            CommandParameter="{Binding Current}"/>
+            Command="{Binding ViewDetails}"/>
 </UserControl>

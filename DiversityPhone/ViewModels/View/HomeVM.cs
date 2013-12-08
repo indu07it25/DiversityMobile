@@ -18,8 +18,8 @@
         public ReactiveCommand Maps { get; private set; }
         public ICommand Help { get; private set; }
 
-        public ReactiveCommand<IElementVM<EventSeries>> SelectSeries { get; private set; }
-        public ReactiveCommand<IElementVM<EventSeries>> EditSeries { get; private set; }
+        public ICommand SelectSeries { get; private set; }
+        public ICommand EditSeries { get; private set; }
         #endregion
 
         #region Properties

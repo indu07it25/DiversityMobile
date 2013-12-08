@@ -1,22 +1,15 @@
-﻿using DiversityPhone.Interface;
-using DiversityPhone.Model;
-using System;
+﻿using DiversityPhone.Model;
 using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-    class ViewDetailsCommand<T> : ReactiveCommand<IElementVM<T>>
+    class ViewDetailsCommand<T> : ReactiveCommand<T> where T : class
     {
-        private static Func<IElementVM<T>, bool> CanViewDetails(IViewEditPolicy policy)
-        {
-            return vm => vm != null && policy.CanViewDetails(vm.Model);
-        }
-
-        public ViewDetailsCommand(DataVMServices Services)
-            : base(CanViewDetails(Services.EditPolicy))
+        public ViewDetailsCommand(IEditPageServices Services)
+            : base(Services.EditPolicy.CanViewDetails)
         {
             Services.Messenger.RegisterMessageSource(
-                this.Where(CanViewDetails(Services.EditPolicy)),
+                this.Where(Services.EditPolicy.CanViewDetails),
                 MessageContracts.VIEW_DETAILS
                 );
         }

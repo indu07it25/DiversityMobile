@@ -4,6 +4,14 @@ using System.Windows.Input;
 
 namespace DiversityPhone.ViewModels
 {
+    public static class CommandDefaultParameter
+    {
+        public static ICommand WithParameter(this ICommand cmd, Func<object> retrieveParameter)
+        {
+            return new ParameterlessCommand(cmd, retrieveParameter);
+        }
+    }
+
     public class ParameterlessCommand : IReactiveCommand
     {
         ICommand _Inner;

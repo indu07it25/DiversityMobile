@@ -19,17 +19,18 @@
 
         public ViewESVM(DataVMServices Services)
         {
+            Services.Messenger.RegisterPageFor<EventSeries>(Page.ViewES, MessageContracts.VIEW);
+
             Current = new CurrentElement<EventSeries>(Services);
 
             Events = new ChildListVM<EventSeries, Event>(Services, Current.Observable, Queries.Events);
 
             AddEvent = new ReactiveCommand();
             AddEvent
-                .Select(_ => new EventVM(
-                    new Event()
+                .Select(_ => new Event()
                     {
                         SeriesID = Current.Current.Model.SeriesID
-                    }) as IElementVM<Event>)
+                    })
                 .ToMessage(Services.Messenger, MessageContracts.NEW);
 
             Maps = new ReactiveCommand(Current.Observable.Model().Select(es => !es.IsNoEventSeries()));
