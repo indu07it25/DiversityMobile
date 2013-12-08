@@ -5,6 +5,7 @@ namespace DiversityPhone.ViewModels
     using ReactiveUI;
     using ReactiveUI.Xaml;
     using System;
+    using System.Reactive;
     using System.Reactive.Linq;
 
 
@@ -53,35 +54,21 @@ namespace DiversityPhone.ViewModels
 
 
         public EditESVM(DataVMServices Services)
-            : base(Services)
+            : base(Services, Page.EditES)
         {
 
 
-            (FinishSeries = new ReactiveCommand(CurrentModelObservable.Select(es => es.SeriesEnd == null)))
+            (FinishSeries = new ReactiveCommand(CurrentObservable.Select(es => es.SeriesEnd == null)))
                 .Select(_ => DateTime.Now as DateTime?)
                 .Subscribe(x => SeriesEnd = x);
 
-            Save
+            //TODO!!
+            /*Save
                 .Where(_ => _SeriesEnd != null)
-                .Subscribe(_ => Services.Messenger.SendMessage<EventSeries>(null, MessageContracts.STOP));
+                .Subscribe(_ => Services.Messenger.SendMessage<EventSeries>(null, MessageContracts.STOP));*/
 
-
-        }
-
-        private IObservable<bool> CanSave()
-        {
-            var descriptionNonEmpty =
-                this.WhenAny(x => x.Description, x => x.Value)
-                .Select(desc => !string.IsNullOrWhiteSpace(desc))
-                .StartWith(false);
-
-            var endsAfterItBegins =
-                this.WhenAny(x => x.SeriesEnd, x => x.Value)
-                .CombineLatest(CurrentModelObservable, (end, model) => new { SeriesEnd = end, Model = model })
-                .Select(pair => (pair.SeriesEnd == null) ? true : pair.SeriesEnd.Value > pair.Model.SeriesStart)
-                .StartWith(true);
-
-            return descriptionNonEmpty.BooleanAnd(endsAfterItBegins);
+            this.WhenAny(x => x.Description, x => x.SeriesCode, x => x.SeriesStart, x => x.SeriesEnd, (a, b, c, d) => Unit.Default)
+                .Subscribe(_ => UpdateCanSave());
         }
 
         protected override void UpdateView(EventSeries model)
@@ -93,13 +80,20 @@ namespace DiversityPhone.ViewModels
             SeriesStart = string.Format("{0} {1}", start.ToShortDateString(), start.ToShortTimeString());
         }
 
-        protected override void UpdateModel()
+        protected override void UpdateModel(EventSeries model)
         {
-            Current.Model.Description = Description;
-            Current.Model.SeriesCode = SeriesCode;
-            Current.Model.SeriesEnd = SeriesEnd ?? Current.Model.SeriesEnd;
+            model.Description = Description;
+            model.SeriesCode = SeriesCode;
+            model.SeriesEnd = SeriesEnd ?? model.SeriesEnd;
         }
 
+        protected override bool CanSave(EventSeries model)
+        {
+            var descValid = !string.IsNullOrWhiteSpace(Description);
 
+            var endsAfterItBegins = !SeriesEnd.HasValue || (SeriesEnd.Value > model.SeriesStart);
+
+            return descValid && endsAfterItBegins;
+        }
     }
 }

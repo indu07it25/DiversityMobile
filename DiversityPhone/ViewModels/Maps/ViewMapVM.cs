@@ -7,18 +7,19 @@ using System;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Windows;
+using System.Windows.Input;
 using System.Windows.Media.Imaging;
 
 namespace DiversityPhone.ViewModels
 {
     public class ViewMapVM : ReactiveObject, ISavePageVM
     {
-        public PageVMServices Services { get; private set; }
+        public IUseActivation Services { get; private set; }
 
         public ReactiveCommand SelectMap { get; private set; }
-        public IReactiveCommand ToggleEditable { get; private set; }
+        public ICommand ToggleEditable { get; private set; }
         public ReactiveCommand SetLocation { get; private set; }
-        public IReactiveCommand Save { get; private set; }
+        public ICommand Save { get; private set; }
 
         public IElementVM<Map> CurrentMap { get { return _CurrentMap.Value; } }
         private ObservableAsPropertyHelper<IElementVM<Map>> _CurrentMap;
@@ -173,11 +174,11 @@ namespace DiversityPhone.ViewModels
 
 
 
-            ToggleEditable = new ReactiveCommand(current_localizable_if_not_series.Select(l => l != null));
-
+            var toggleEditable = new ReactiveCommand(current_localizable_if_not_series.Select(l => l != null));
+            ToggleEditable = toggleEditable;
             _IsEditable = this.ObservableToProperty(
                                 current_localizable_if_not_series.Select(_ => false)
-                                .Merge(ToggleEditable.Select(_ => true)),
+                                .Merge(toggleEditable.Select(_ => true)),
                                 x => x.IsEditable);
 
             SetLocation = new ReactiveCommand(_IsEditable);
@@ -191,11 +192,12 @@ namespace DiversityPhone.ViewModels
 
 
 
-            Save = new ReactiveCommand(_IsEditable.BooleanAnd(valid_localization));
+            var save = new ReactiveCommand(_IsEditable.BooleanAnd(valid_localization));
+            Save = save;
             current_localizable_if_not_series
                 .Where(loc => loc != null)
                 .Select(loc =>
-                    Save
+                    save
                     .Select(_ => loc)
                     )
                 .Switch()

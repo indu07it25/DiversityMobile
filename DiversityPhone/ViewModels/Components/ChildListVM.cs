@@ -10,12 +10,12 @@ namespace DiversityPhone.ViewModels
     public class ChildListVM<T, TChild> : AsyncLoadCollection<IElementVM<TChild>> where TChild : class, IReadOnlyEntity
     {
         DataVMServices Services;
-        VMChangeListener<IElementVM<TChild>> _ChangeListener;
+        IChangeListener<TChild, IElementVM<TChild>> _ChangeListener;
 
         private void UpdateListenerFilter(Expression<Func<TChild, bool>> predicateExpression)
         {
             var predicate = predicateExpression.Compile();
-            _ChangeListener.ItemFilter = vm => vm != null && predicate(vm.Model);
+            _ChangeListener.NotificationFilter = predicate;
         }
 
 
@@ -37,7 +37,7 @@ namespace DiversityPhone.ViewModels
             : base(Services.ThreadPool, Services.Dispatcher)
         {
             this.Services = Services;
-            _ChangeListener = new VMChangeListener<IElementVM<TChild>>(Services, this);
+            _ChangeListener = new VMChangeListener<TChild>(Services, this);
 
             vmStream.Model()
                 .Select(childPredicateFactory)

@@ -15,7 +15,7 @@ using System.Windows.Input;
 
 namespace DiversityPhone.ViewModels
 {
-    public class ImportExportVM : ReactiveObject, IPageServices
+    public class ImportExportVM : ReactiveObject, IPageServices<IUseBaseServices>
     {
         public enum Pivot
         {
@@ -32,7 +32,7 @@ namespace DiversityPhone.ViewModels
             Download
         }
 
-        public PageVMServices Services { get; private set; }
+        public IUseBaseServices Services { get; private set; }
 
         public ICommand TakeSnapshot { get { return _TakeSnapshot; } }
         public ICommand DownloadSnapshot { get { return _DownloadSnapshot; } }
@@ -195,7 +195,7 @@ namespace DiversityPhone.ViewModels
                 .SubscribeCommand(_RefreshSnapshots);
 
             Cloud.IsConnectedObservable()
-                .CombineLatest(Services.Activation.ActivationObservable, (connected, active) => connected & active)
+                .CombineLatest(Services.Activation, (connected, active) => connected & active)
                 .Where(x => x)
                 .SubscribeCommand(_RefreshRemoteSnapshots);
 

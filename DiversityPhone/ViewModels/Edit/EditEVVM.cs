@@ -50,7 +50,7 @@ namespace DiversityPhone.ViewModels
 
             Observable.CombineLatest(
             CurrentModelObservable.Where(m => m.IsNew()),
-            Services.Activation.ActivationObservable,
+            Services.Activation,
             (_, act) => act
             )
                 .Subscribe(active =>

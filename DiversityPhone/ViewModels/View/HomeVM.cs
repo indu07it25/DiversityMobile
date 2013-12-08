@@ -46,7 +46,7 @@
                                 ).Select(Services.VMFactory.CreateVM);
                         });
 
-            var seriesList = new AsyncLoadCollection<IElementVM<EventSeries>>(Services.ThreadPool, Services.Dispatcher);
+            var seriesList = new ListeningCollection<EventSeries, IElementVM<EventSeries>>(Services, new VMChangeListener<EventSeries>(Services));
             seriesLists.Subscribe(seriesList.ContentObserver);
 
             SeriesList = seriesList;
@@ -83,8 +83,8 @@
             Settings = new GoToPageCommand(Services.Messenger, Page.Settings);
 
             Add = new ReactiveCommand(noOpenSeries);
-            Add.Select(_ => new EventSeriesVM(new EventSeries()) as IElementVM<EventSeries>)
-                .ToMessage(Services.Messenger, MessageContracts.VIEW_DETAILS);
+            Add.Select(_ => new EventSeries())
+                .ToMessage(Services.Messenger, MessageContracts.NEW);
 
             Maps = new ReactiveCommand();
             Maps.Select(_ => null as ILocalizable)

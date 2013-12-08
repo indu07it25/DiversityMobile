@@ -4,9 +4,9 @@ using System.Reactive.Linq;
 
 namespace DiversityPhone.ViewModels
 {
-    public abstract class ElementPageVMBase<T> : ReactiveObject, IPageServices
+    public abstract class ElementPageVMBase<T> : ReactiveObject, IPageServices<IUseBaseServices>
     {
-        public PageVMServices Services { get; private set; }
+        public IUseBaseServices Services { get; private set; }
 
         private IElementVM<T> _Current;
         /// <summary>
@@ -35,7 +35,7 @@ namespace DiversityPhone.ViewModels
         /// </summary>
         protected IObservable<T> ModelByVisitObservable { get; private set; }
 
-        public ElementPageVMBase(PageVMServices Services)
+        public ElementPageVMBase(IUseBaseServices Services)
         {
             this.Services = Services;
 

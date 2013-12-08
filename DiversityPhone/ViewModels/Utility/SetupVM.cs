@@ -12,9 +12,9 @@ using System.Reactive.Linq;
 namespace DiversityPhone.ViewModels
 {
 
-    public class SetupVM : ReactiveObject, IPageServices
+    public class SetupVM : ReactiveObject, IPageServices<IUseCommunication>
     {
-        public PageVMServices Services { get; private set; }
+        public IUseCommunication Services { get; private set; }
         private readonly IDiversityServiceClient Repository;
         private readonly ISettingsService Settings;
 

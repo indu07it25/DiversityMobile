@@ -38,6 +38,12 @@ namespace DiversityPhone.UnitTest
             // ATTENTION: Default can't be stored in DB
             Timestamp = DateTime.Now;
         }
+
+        public bool CanEdit { get; set; }
+
+        public bool CanSave { get; set; }
+
+        public bool Updated { get; set; }
     }
 
     [Table]

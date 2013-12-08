@@ -9,17 +9,14 @@
     using System.Reactive.Linq;
     using System.Reactive.Subjects;
 
-    public interface IPageServices : IPageServices<PageVMServices> { }
+    public interface IPageServices : IPageServices<IUseActivation> { }
 
-    public interface IPageServices<T> where T : PageVMServices
+    public interface IPageServices<T> where T : IUseActivation
     {
         T Services { get; }
     }
 
-    public interface IPageActivation : IActivatable
-    {
-        IObservable<bool> ActivationObservable { get; }
-    }
+    public interface IPageActivation : IObservable<bool>, IActivatable { }
 
     public interface IActivatable
     {
@@ -27,7 +24,39 @@
         void Deactivate();
     }
 
-    public class PageVMServices
+    public interface IUseActivation
+    {
+        IPageActivation Activation { get; }
+    }
+
+    public interface IUseCommunication : IUseActivation
+    {
+        IMessageBus Messenger { get; }
+        INotificationService Notifications { get; }
+    }
+
+    public interface IUseThreading : IUseActivation
+    {
+        IScheduler Dispatcher { get; }
+        IScheduler ThreadPool { get; }
+    }
+
+    public interface IUseFieldData
+    {
+        IFieldDataService Storage { get; }
+        IVocabularyService Vocabulary { get; }
+        ITaxonService Taxa { get; }
+        ICreateViewModels VMFactory { get; }
+        IViewEditPolicy EditPolicy { get; }
+    }
+
+    public interface IUseBaseServices : IUseActivation, IUseCommunication, IUseThreading { }
+
+    public interface IEditPageServices : IUseBaseServices, IUseFieldData
+    {
+    }
+
+    public class PageVMServices : IUseBaseServices
     {
         [Inject, Dispatcher]
         public IScheduler Dispatcher { get; set; }
@@ -43,7 +72,7 @@
         public ICreateViewModels VMFactory { get; set; }
     }
 
-    public class DataVMServices : PageVMServices
+    public class DataVMServices : PageVMServices, IEditPageServices
     {
         [Inject]
         public IFieldDataService Storage { get; set; }
@@ -78,23 +107,22 @@
 
 
 
-    public sealed class PageActivator : IPageActivation
+    public sealed class PageActivator : ObservableBase<bool>, IPageActivation
     {
-        private ISubject<bool> ActivationSubject = new Subject<bool>();
-        public IObservable<bool> ActivationObservable { get; private set; }
+        Subject<bool> _Inner = new Subject<bool>();
 
         public void Activate()
         {
-            ActivationSubject.OnNext(true);
+            _Inner.OnNext(true);
         }
         public void Deactivate()
         {
-            ActivationSubject.OnNext(false);
+            _Inner.OnNext(false);
         }
 
-        public PageActivator()
+        protected override IDisposable SubscribeCore(IObserver<bool> observer)
         {
-            ActivationObservable = ActivationSubject;
+            return _Inner.Subscribe(observer);
         }
     }
 
@@ -111,7 +139,7 @@
             if (page == null)
                 throw new ArgumentNullException("page");
 
-            return page.ActivationObservable.Where(active => active)
+            return page.Where(active => active)
                 .Select(_ => Unit.Default);
         }
 
@@ -120,7 +148,7 @@
             if (page == null)
                 throw new ArgumentNullException("page");
 
-            return page.ActivationObservable.Where(active => !active)
+            return page.Where(active => !active)
                 .Select(_ => Unit.Default);
         }
     }

@@ -1,9 +1,9 @@
-﻿using ReactiveUI.Xaml;
+﻿using System.Windows.Input;
 
 namespace DiversityPhone.ViewModels
 {
-    public interface IDeletePageVM : IPageServices
+    public interface IDeletePageVM
     {
-        IReactiveCommand Delete { get; }
+        ICommand Delete { get; }
     }
 }

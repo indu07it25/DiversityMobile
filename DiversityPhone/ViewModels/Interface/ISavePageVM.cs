@@ -1,12 +1,12 @@
 ﻿using ReactiveUI;
-using ReactiveUI.Xaml;
+using System.Windows.Input;
 
 namespace DiversityPhone.ViewModels
 {
-    public interface ISavePageVM : IReactiveNotifyPropertyChanged, IPageServices
+    public interface ISavePageVM : IReactiveNotifyPropertyChanged
     {
-        IReactiveCommand Save { get; }
-        IReactiveCommand ToggleEditable { get; }
+        ICommand Save { get; }
+        ICommand ToggleEditable { get; }
         bool IsEditable { get; }
     }
 }

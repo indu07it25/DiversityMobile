@@ -6,14 +6,15 @@ using System;
 using System.Reactive;
 using System.Reactive.Linq;
 using System.Reactive.Subjects;
+using System.Windows.Input;
 
 namespace DiversityPhone.ViewModels
 {
     public abstract class EditPageVMBase<T> : ElementPageVMBase<T>, IEditPageVM where T : IWriteableEntity, IReactiveNotifyPropertyChanged
     {
-        public IReactiveCommand Save { get; private set; }
-        public IReactiveCommand ToggleEditable { get; private set; }
-        public IReactiveCommand Delete { get; private set; }
+        public ICommand Save { get; private set; }
+        public ICommand ToggleEditable { get; private set; }
+        public ICommand Delete { get; private set; }
 
 
         private ObservableAsPropertyHelper<bool> _IsEditable;
@@ -38,24 +39,27 @@ namespace DiversityPhone.ViewModels
             : base(Services)
         {
             CanSaveSubject = new Subject<bool>();
-            Save = new ReactiveCommand(CanSaveSubject);
-            Save
+            var save = new ReactiveCommand(CanSaveSubject);
+            Save = save;
+            save
                 .Do(_ => UpdateModel())
                 .Select(_ => Current)
                 .Do(_ => Services.Messenger.SendMessage(Page.Previous))
                 .ToMessage(Services.Messenger, MessageContracts.SAVE);
 
-            ToggleEditable = new ReactiveCommand(ModelByVisitObservable.Select(Services.EditPolicy.CanEdit));
+            var toggleEditable = new ReactiveCommand(ModelByVisitObservable.Select(Services.EditPolicy.CanEdit));
+            ToggleEditable = toggleEditable;
             _IsEditable = this.ObservableToProperty(
                     Observable.Merge(
                         ModelByVisitObservable
                         .Select(m => m.IsNew()),
-                        ToggleEditable.Select(_ => !IsEditable)
+                        toggleEditable.Select(_ => !IsEditable)
                     ),
                 x => x.IsEditable);
 
-            Delete = new ReactiveCommand(ModelByVisitObservable.Select(m => !m.IsNew()));
-            Delete
+            var delete = new ReactiveCommand(ModelByVisitObservable.Select(m => !m.IsNew()));
+            Delete = delete;
+            delete
                 .SelectMany(_ =>
                     Services.Notifications.showDecision(DiversityResources.Message_ConfirmDelete)
                     .Where(x => x)

@@ -12,7 +12,7 @@ namespace DiversityPhone.ViewModels
         }
 
         public DeleteCommand(
-            PageVMServices Services
+            IUseCommunication Services
             )
             : base(CanDelete)
         {

@@ -7,7 +7,7 @@ namespace DiversityPhone.ViewModels
 {
     public class RefreshVocabularyVM : IPageServices
     {
-        public PageVMServices Services
+        public IUseActivation Services
         {
             get;
             private set;

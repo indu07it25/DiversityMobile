@@ -113,7 +113,7 @@ namespace DiversityPhone.ViewModels
 
             Observable.CombineLatest(
                 CurrentModelObservable.Where(m => m.IsNew()),
-                Services.Activation.ActivationObservable,
+                Services.Activation,
                 (_, act) => act
             )
                 .Subscribe(active =>
@@ -257,7 +257,7 @@ namespace DiversityPhone.ViewModels
             .ObserveOn(Services.Dispatcher)
             .Subscribe(Identification.ItemsObserver);
 
-            Services.Activation.ActivationObservable
+            Services.Activation
                 .Take(1)
                 .Select(_ => Services.Vocabulary.getTerms(TermList.TaxonomicGroups).ToList() as IList<Term>)
                 .Subscribe(TaxonomicGroup.ItemsObserver);
@@ -303,7 +303,7 @@ namespace DiversityPhone.ViewModels
                 .Subscribe(x => Qualifications.SelectedItem = x);
             #endregion
 
-            var saveTaxonGroupSelection = Save
+            var saveTaxonGroupSelection = (Save as IReactiveCommand)
                 .Select(_ => TaxonomicGroup.SelectedItem);
             Services.Messenger.RegisterMessageSource(
                 saveTaxonGroupSelection,
@@ -314,7 +314,7 @@ namespace DiversityPhone.ViewModels
                 .Subscribe(TaxonomicGroup.ItemsObserver);
 
             Services.Messenger.RegisterMessageSource(
-                Save
+                (Save as IReactiveCommand)
                 .Select(_ => RelationshipType.SelectedItem),
                 MessageContracts.USE);
         }

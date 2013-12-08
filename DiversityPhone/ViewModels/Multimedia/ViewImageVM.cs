@@ -7,6 +7,7 @@
     using System;
     using System.IO;
     using System.Reactive.Linq;
+    using System.Windows.Input;
     using System.Windows.Media.Imaging;
 
     public class ViewImageVM : ViewPageVMBase<MultimediaObject>, IDeletePageVM
@@ -50,7 +51,7 @@
             }
         }
 
-        public IReactiveCommand Delete { get; private set; }
+        public ICommand Delete { get; private set; }
 
 
         public ViewImageVM(
@@ -91,10 +92,11 @@
                 })
                 .Subscribe(SetCurrentImage);
 
-            Delete = new ReactiveCommand();
+            var delete = new ReactiveCommand();
+            Delete = delete;
 
             CurrentObservable
-                .SampleMostRecent(Delete)
+                .SampleMostRecent(delete)
                 .SelectMany(toBeDeleted => Services.Notifications.showDecision(DiversityResources.Message_ConfirmDelete)
                     .Where(x => x)
                     .Select(_ => toBeDeleted)

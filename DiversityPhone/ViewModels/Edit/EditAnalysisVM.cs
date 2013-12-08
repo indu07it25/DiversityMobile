@@ -121,7 +121,7 @@ namespace DiversityPhone.ViewModels
                 .Subscribe(x => CustomResult = x);
 
             Services.Messenger.RegisterMessageSource(
-              Save
+              (Save as IReactiveCommand)
               .Select(_ => Analyses.SelectedItem),
               MessageContracts.USE);
 
